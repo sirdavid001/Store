@@ -153,41 +153,17 @@ export function AdminPortalPage() {
 
   if (!sessionStatus.isAuthenticated) {
     return (
-      <div className="mx-auto grid min-h-[70vh] max-w-6xl gap-6 px-4 py-16 md:px-6 lg:grid-cols-[1.05fr_0.95fr]">
-        <div className="section-frame rounded-[36px] bg-gradient-to-br from-slate-950 via-blue-950/80 to-slate-900 p-8">
-          <p className="text-xs font-semibold uppercase tracking-[0.35em] text-sky-300">
-            Secure Admin Portal
-          </p>
-          <h1 className="mt-4 max-w-[12ch] text-5xl font-semibold text-white">
-            Sign in without leaving the storefront.
-          </h1>
-          <p className="mt-5 max-w-2xl text-sm leading-8 text-slate-300">
-            This operator route now stays inside the SirDavid Gadgets storefront experience. Sign in with your Django staff account to manage catalog entries, shipping rules, verified orders, and payment logs.
-          </p>
-          <div className="mt-8 grid gap-4 md:grid-cols-3">
-            {[
-              ["Products", "Manage devices, accessories, pricing, and stock positions."],
-              ["Payments", "Review initialized transactions and webhook-confirmed orders."],
-              ["Operations", "Adjust shipping logic and watch fulfillment status."],
-            ].map(([title, text]) => (
-              <div key={title} className="rounded-[24px] border border-white/10 bg-white/6 p-5">
-                <p className="text-sm font-semibold text-white">{title}</p>
-                <p className="mt-2 text-sm leading-7 text-slate-300">{text}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="section-frame rounded-[36px] p-8">
+      <div className="mx-auto flex min-h-[70vh] max-w-xl items-center justify-center px-4 py-16 md:px-6">
+        <div className="section-frame w-full rounded-[36px] p-8">
           <div className="inline-flex rounded-full bg-white/8 p-4 text-sky-300">
             <LockKeyhole className="h-7 w-7" />
           </div>
           <p className="mt-6 text-xs font-semibold uppercase tracking-[0.35em] text-sky-300">
-            Admin Sign-in
+            Secure Admin Portal
           </p>
-          <h2 className="mt-3 text-4xl font-semibold text-white">Use your staff credentials</h2>
+          <h1 className="mt-3 text-4xl font-semibold text-white">Admin login</h1>
           <p className="mt-4 text-sm leading-7 text-slate-300">
-            Authentication is still handled by Django. Only staff accounts will be allowed past this screen.
+            Sign in with your Django staff account to continue.
           </p>
 
           <form onSubmit={submitAdminLogin} className="mt-8 space-y-4">
@@ -231,6 +207,10 @@ export function AdminPortalPage() {
               {submittingAuth ? "Signing in..." : "Continue to Admin Portal"}
             </button>
           </form>
+
+          <p className="mt-5 text-xs leading-6 text-slate-500">
+            Only staff accounts are allowed into this route.
+          </p>
         </div>
       </div>
     );
