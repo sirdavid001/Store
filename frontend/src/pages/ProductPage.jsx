@@ -176,9 +176,8 @@ export function ProductPage() {
 
             {activePanel === "delivery" ? (
               <div className="mt-5 rounded-[24px] border border-white/10 bg-black/20 p-4 text-sm leading-7 text-slate-300">
-                Orders are only confirmed after Paystack webhook verification. Premium devices
-                move into dispatch once payment clears and you can continue follow-up from the
-                order tracking page.
+                Premium devices move into dispatch after checkout processing is completed, and
+                you can continue follow-up from the order tracking page.
               </div>
             ) : null}
           </div>

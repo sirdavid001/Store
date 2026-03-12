@@ -75,7 +75,7 @@ export function TrackOrderPage() {
         <div className="section-frame rounded-[28px] p-5 sm:rounded-[32px] sm:p-6">
           <div className="flex items-center gap-3 text-sm text-emerald-200">
             <ShieldCheck className="h-5 w-5" />
-            Orders remain pending until payment verification succeeds.
+            Track checkout, packaging, and delivery updates in one place.
           </div>
         </div>
       </section>
@@ -147,7 +147,8 @@ export function TrackOrderPage() {
               </div>
               <h2 className="text-3xl font-semibold text-white">Enter an order reference to begin.</h2>
               <p className="text-sm leading-7 text-slate-300">
-                Use an order number, tracking number, or the customer email used at checkout. We only surface deliveries that have already passed payment verification.
+                Use an order number, tracking number, or the customer email used at checkout to
+                see the latest packaging and delivery progress.
               </p>
             </div>
           </div>

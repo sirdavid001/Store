@@ -1,6 +1,6 @@
 Hello {{ order.customer_name }},
 
-Your order {{ order.order_number }} has been confirmed after payment verification.
+Your order {{ order.order_number }} has been confirmed and is now being prepared.
 
 Tracking number: {{ order.tracking_number }}
 Total: {{ order.total_amount }}

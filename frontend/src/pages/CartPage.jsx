@@ -225,7 +225,7 @@ export function CartPage() {
         <div className="section-frame rounded-[28px] p-5 sm:rounded-[32px] sm:p-6">
           <div className="flex items-center gap-3 rounded-[24px] bg-emerald-500/10 p-4 text-sm text-emerald-200">
             <ShieldCheck className="h-5 w-5" />
-            Orders are only confirmed after Paystack webhook verification.
+            Secure checkout and delivery updates are handled in one premium flow.
           </div>
 
           <div className="mt-6 space-y-4">

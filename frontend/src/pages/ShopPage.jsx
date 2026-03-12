@@ -181,10 +181,10 @@ export function ShopPage() {
                     </div>
                     <div className="rounded-[22px] bg-slate-950 p-4 text-white">
                       <p className="text-sm font-semibold uppercase tracking-[0.2em] text-sky-200 md:text-xs md:tracking-[0.3em]">
-                        Webhook rule
+                        Secure payment flow
                       </p>
                       <p className="mt-2 text-base font-semibold md:text-lg">
-                        Orders are only confirmed after Paystack verification.
+                        Hosted checkout built for fast, dependable premium electronics purchases.
                       </p>
                     </div>
                   </div>
@@ -351,7 +351,7 @@ export function ShopPage() {
                 ["Paystack hosted checkout", "Verified references and logs"],
                 ["Apple Pay ready", "Safari-compatible premium checkout"],
                 ["Fast delivery lanes", "Priority routing for high-value orders"],
-                ["Clear order messaging", "Only confirmed after webhook verification"],
+                ["Clear order messaging", "Transparent updates from checkout to delivery"],
               ].map(([title, text]) => (
                 <div key={title} className="rounded-[28px] border border-white/10 bg-white/5 p-5 text-center lg:text-left">
                   <div className="mb-3 inline-flex rounded-2xl bg-white/10 p-2 text-sky-300">

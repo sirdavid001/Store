@@ -349,12 +349,12 @@ export const policyContent = {
       {
         heading: "Product listings",
         body:
-          "We aim to keep every product page accurate, but availability, model trims, and pricing may change without notice until a Paystack payment is successfully verified.",
+          "We aim to keep every product page accurate, but availability, model trims, and pricing may change without notice until checkout processing is complete.",
       },
       {
         heading: "Payment confirmation",
         body:
-          "Orders are not confirmed at checkout initiation. A transaction is treated as valid only when Paystack sends a successful webhook verification event.",
+          "Orders move through payment and processing checks before final fulfillment updates are issued.",
       },
       {
         heading: "Operational discretion",
@@ -371,7 +371,7 @@ export const policyContent = {
       {
         heading: "Eligible refunds",
         body:
-          "Items that arrive damaged, materially different from listing details, or unavailable after payment verification may be refunded to the original payment source.",
+          "Items that arrive damaged, materially different from listing details, or unavailable after checkout processing may be refunded to the original payment source.",
       },
       {
         heading: "Non-eligible items",
@@ -420,7 +420,7 @@ export const policyContent = {
       {
         heading: "Fulfillment sequence",
         body:
-          "Packing begins only after Paystack verification. Tracking numbers are issued once the parcel enters dispatch handling.",
+          "Packing begins after checkout processing is complete. Tracking numbers are issued once the parcel enters dispatch handling.",
       },
       {
         heading: "Shipping fees",
