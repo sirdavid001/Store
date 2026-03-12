@@ -1,4 +1,17 @@
-import { ChevronDown, Globe2, Menu, Search, ShieldCheck, ShoppingBag, Sparkles, Truck, X } from "lucide-react";
+import {
+  ArrowRight,
+  ChevronDown,
+  Globe2,
+  Mail,
+  Menu,
+  Package,
+  Search,
+  ShieldCheck,
+  ShoppingCart,
+  Truck,
+  X,
+  Zap,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 
@@ -11,8 +24,10 @@ function HeaderLink({ to, children }) {
     <NavLink
       to={to}
       className={({ isActive }) =>
-        `inline-flex min-h-11 items-center rounded-full px-4 py-2 text-sm font-semibold transition ${
-          isActive ? "bg-white/10 text-white" : "text-slate-300 hover:bg-white/6 hover:text-white"
+        `inline-flex min-h-11 w-full items-center justify-start rounded-lg px-3 py-1.5 text-sm transition-colors md:w-auto md:justify-center ${
+          isActive
+            ? "bg-blue-50 font-semibold text-blue-600"
+            : "font-medium text-gray-600 hover:bg-gray-100 hover:text-gray-900"
         }`
       }
     >
@@ -46,20 +61,10 @@ const footerSections = [
     title: "Legal",
     links: policyLinks.map((policy) => ({ href: policy.href, label: policy.title })),
   },
-  {
-    key: "brand",
-    title: "Brand",
-    links: [
-      { href: "/legal", label: "Legal hub" },
-      { href: "/shop", label: "Premium sourcing" },
-      { href: "/track-order", label: "Verified fulfillment" },
-    ],
-  },
 ];
 
 export function StorefrontLayout() {
-  const { cartCount, currentCurrency, currencyOptions, setCurrency, loadingRates, lastRateSync } =
-    useStore();
+  const { cartCount, currentCurrency, currencyOptions, setCurrency } = useStore();
   const navigate = useNavigate();
   const location = useLocation();
   const [query, setQuery] = useState("");
@@ -69,8 +74,9 @@ export function StorefrontLayout() {
     shop: true,
     support: false,
     legal: false,
-    brand: false,
   });
+
+  const isShopPage = location.pathname === "/" || location.pathname === "/shop";
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -94,6 +100,7 @@ export function StorefrontLayout() {
     }
     navigate(`/shop${params.toString() ? `?${params}` : ""}`);
     setMobileSearchOpen(false);
+    setMobileMenuOpen(false);
   }
 
   function toggleFooterSection(key) {
@@ -104,55 +111,61 @@ export function StorefrontLayout() {
   }
 
   return (
-    <div className="site-shell min-h-screen">
-      <header className="sticky top-0 z-50 border-b border-white/10 bg-slate-950/80 backdrop-blur-2xl">
-        <div className="mx-auto max-w-7xl px-3 md:px-6">
-          <div className="flex h-14 items-center justify-between gap-2 md:h-auto md:flex-wrap md:gap-4 md:py-4">
-            <NavLink to="/shop" className="flex min-w-0 items-center gap-2.5 md:gap-3">
-              <span className="relative flex h-9 w-9 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 via-blue-600 to-violet-500 shadow-[0_0_32px_rgba(96,124,255,0.45)] md:h-11 md:w-11">
-                <Sparkles className="h-4 w-4 text-white md:h-5 md:w-5" />
-              </span>
-              <div className="min-w-0">
-                <p className="truncate text-base font-semibold leading-none text-white md:text-lg">
-                  SirDavid
-                </p>
-                <p className="text-[9px] font-semibold uppercase tracking-[0.32em] text-sky-300 md:text-[10px] md:tracking-[0.38em]">
-                  Gadgets
-                </p>
-              </div>
-            </NavLink>
+    <div className="site-shell min-h-screen bg-[#f8f9fc] text-gray-900">
+      <header className="sticky top-0 z-50 border-b border-gray-100/80 bg-white/95 backdrop-blur-xl shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6">
+          <div className="flex h-16 items-center justify-between gap-3">
+            <div className="flex min-w-0 items-center gap-3">
+              <NavLink to="/shop" className="flex min-w-0 items-center gap-3">
+                <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-blue-600 to-purple-600 shadow-md">
+                  <Package className="h-5 w-5 text-white" />
+                </span>
+                <div className="min-w-0">
+                  <p className="truncate text-base font-extrabold tracking-tight text-gray-900 sm:text-lg">
+                    SirDavid
+                  </p>
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400">
+                    Gadgets
+                  </p>
+                </div>
+              </NavLink>
 
-            <form onSubmit={submitSearch} className="relative hidden min-w-[240px] flex-1 md:block">
-              <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-              <input
-                value={query}
-                onChange={(event) => setQuery(event.target.value)}
-                placeholder="Search phones, laptops, accessories..."
-                className="h-11 w-full rounded-full border border-white/10 bg-white/5 py-3 pl-11 pr-4 text-sm text-white outline-none transition placeholder:text-slate-500 hover:border-white/20 focus:border-sky-400"
-              />
-            </form>
+              {isShopPage ? (
+                <form onSubmit={submitSearch} className="relative hidden flex-1 md:block md:max-w-md md:mx-8">
+                  <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                  <input
+                    value={query}
+                    onChange={(event) => setQuery(event.target.value)}
+                    placeholder="Search products, brands, or models"
+                    className="h-11 w-full rounded-xl border border-gray-200 bg-gray-50 py-2.5 pl-10 pr-4 text-sm text-gray-900 outline-none transition-all placeholder:text-gray-400 focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-500/10"
+                  />
+                </form>
+              ) : null}
+            </div>
 
-            <nav className="hidden items-center gap-2 md:flex">
-              <HeaderLink to="/shop">Shop</HeaderLink>
-              <HeaderLink to="/track-order">Track Order</HeaderLink>
-            </nav>
+            <div className="hidden items-center gap-2 md:flex">
+              <nav className="flex items-center gap-1">
+                <HeaderLink to="/shop">Shop</HeaderLink>
+                <HeaderLink to="/track-order">Track Order</HeaderLink>
+              </nav>
 
-            <div className="hidden items-center gap-3 md:flex">
-              <div className="w-[128px] min-w-[128px] sm:w-[150px] sm:min-w-[150px]">
+              <div className="w-[124px]">
                 <SelectField
                   value={currentCurrency}
                   onValueChange={setCurrency}
                   options={currencyOptions}
                   placeholder="Currency"
-                  triggerClassName="min-h-11 bg-white/5 py-2.5 text-xs"
+                  triggerClassName="h-10 rounded-xl border-gray-200 bg-gray-50 px-3 py-1.5 text-sm text-gray-600 hover:border-gray-300"
                 />
               </div>
+
               <NavLink
                 to="/cart"
-                className="relative inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/6 text-white transition hover:border-white/20 hover:bg-white/10"
+                className="inline-flex h-10 items-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 px-4 text-sm font-semibold text-white transition-all hover:shadow-md hover:shadow-blue-500/25"
               >
-                <ShoppingBag className="h-5 w-5" />
-                <span className="absolute -right-1 -top-1 inline-flex min-h-5 min-w-5 items-center justify-center rounded-full bg-gradient-to-r from-blue-600 to-violet-600 px-1 text-[10px] font-bold text-white">
+                <ShoppingCart className="h-4 w-4" />
+                <span>Cart</span>
+                <span className="inline-flex min-w-5 items-center justify-center rounded-full bg-white px-1.5 text-xs font-bold text-blue-600">
                   {cartCount}
                 </span>
               </NavLink>
@@ -162,28 +175,26 @@ export function StorefrontLayout() {
               <button
                 type="button"
                 onClick={() => setMobileSearchOpen((current) => !current)}
-                className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/6 text-white transition hover:border-white/20 hover:bg-white/10"
+                className="inline-flex h-10 w-10 items-center justify-center rounded-xl text-gray-600 transition hover:bg-gray-100"
                 aria-label={mobileSearchOpen ? "Close search" : "Open search"}
-                aria-expanded={mobileSearchOpen}
               >
                 {mobileSearchOpen ? <X className="h-5 w-5" /> : <Search className="h-5 w-5" />}
               </button>
               <NavLink
                 to="/cart"
-                className="relative inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/6 text-white transition hover:border-white/20 hover:bg-white/10"
-                aria-label="View cart"
+                className="relative inline-flex h-10 min-w-10 items-center justify-center rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 px-3 text-white shadow-sm"
+                aria-label="Cart"
               >
-                <ShoppingBag className="h-5 w-5" />
-                <span className="absolute -right-1 -top-1 inline-flex min-h-5 min-w-5 items-center justify-center rounded-full bg-gradient-to-r from-blue-600 to-violet-600 px-1 text-[10px] font-bold text-white">
+                <ShoppingCart className="h-4 w-4" />
+                <span className="absolute -right-1.5 -top-1.5 inline-flex min-h-5 min-w-5 items-center justify-center rounded-full bg-white px-1.5 text-[10px] font-bold text-blue-600">
                   {cartCount}
                 </span>
               </NavLink>
               <button
                 type="button"
                 onClick={() => setMobileMenuOpen((current) => !current)}
-                className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/6 text-white transition hover:border-white/20 hover:bg-white/10"
+                className="inline-flex h-10 w-10 items-center justify-center rounded-xl text-gray-600 transition hover:bg-gray-100"
                 aria-label={mobileMenuOpen ? "Close navigation menu" : "Open navigation menu"}
-                aria-expanded={mobileMenuOpen}
               >
                 {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
               </button>
@@ -192,171 +203,155 @@ export function StorefrontLayout() {
 
           <div
             className={`overflow-hidden transition-[max-height,opacity,padding] duration-300 md:hidden ${
-              mobileSearchOpen ? "max-h-24 pb-3 opacity-100" : "max-h-0 opacity-0"
+              mobileSearchOpen ? "max-h-24 pb-4 opacity-100" : "max-h-0 opacity-0"
             }`}
           >
             <form onSubmit={submitSearch} className="relative">
-              <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+              <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
               <input
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
-                placeholder="Search phones, laptops, accessories..."
-                className="h-11 w-full rounded-full border border-white/10 bg-white/5 py-3 pl-11 pr-4 text-sm text-white outline-none transition placeholder:text-slate-500 hover:border-white/20 focus:border-sky-400"
+                placeholder="Search products, brands, or models"
+                className="h-11 w-full rounded-xl border border-gray-200 bg-gray-50 py-2.5 pl-10 pr-4 text-sm text-gray-900 outline-none transition-all placeholder:text-gray-400 focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-500/10"
               />
             </form>
           </div>
 
           <div
-            className={`overflow-hidden border-t border-white/10 transition-[max-height,opacity,padding] duration-300 md:hidden ${
+            className={`overflow-hidden transition-[max-height,opacity,padding] duration-300 md:hidden ${
               mobileMenuOpen ? "max-h-[420px] py-4 opacity-100" : "max-h-0 py-0 opacity-0"
             }`}
           >
-            <div className="space-y-4">
+            <div className="space-y-3 border-t border-gray-100 px-0 pt-4">
+              <form onSubmit={submitSearch} className="relative">
+                <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                <input
+                  value={query}
+                  onChange={(event) => setQuery(event.target.value)}
+                  placeholder="Search products, brands, or models"
+                  className="h-11 w-full rounded-xl border border-gray-200 bg-gray-50 py-2.5 pl-10 pr-4 text-sm text-gray-900 outline-none transition-all placeholder:text-gray-400 focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-500/10"
+                />
+              </form>
+
               <nav className="grid gap-2">
                 <HeaderLink to="/shop">Shop</HeaderLink>
                 <HeaderLink to="/track-order">Track Order</HeaderLink>
                 <HeaderLink to="/legal">Legal Hub</HeaderLink>
               </nav>
-              <div className="space-y-3 rounded-[24px] border border-white/10 bg-white/5 p-4">
-                <p className="text-xs font-semibold uppercase tracking-[0.28em] text-sky-300">
+
+              <div className="rounded-2xl border border-gray-200 bg-gray-50 p-3">
+                <div className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-gray-500">
+                  <Globe2 className="h-3.5 w-3.5 text-blue-500" />
                   Currency
-                </p>
+                </div>
                 <SelectField
                   value={currentCurrency}
                   onValueChange={setCurrency}
                   options={currencyOptions}
                   placeholder="Currency"
-                  triggerClassName="min-h-11 bg-white/5 py-2.5 text-sm"
+                  triggerClassName="h-11 rounded-xl border-gray-200 bg-white px-3 py-2.5 text-sm text-gray-700"
                 />
               </div>
-              <div className="grid gap-2 min-[360px]:grid-cols-2">
-                <NavLink
-                  to="/cart"
-                  className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-white/10 bg-white/6 px-4 py-3 text-sm font-semibold text-white transition hover:border-white/20 hover:bg-white/10"
-                >
-                  <ShoppingBag className="h-4 w-4" />
-                  Cart ({cartCount})
-                </NavLink>
-                <a
-                  href="mailto:support@sirdavid.site"
-                  className="inline-flex min-h-11 items-center justify-center rounded-full border border-white/10 bg-white/6 px-4 py-3 text-sm font-semibold text-white transition hover:border-white/20 hover:bg-white/10"
-                >
-                  Support
-                </a>
-              </div>
-            </div>
-          </div>
-
-          <div className="hidden border-t border-white/6 bg-white/[0.02] md:block">
-            <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-3 px-4 py-2 text-xs text-slate-400 md:px-6">
-              <span className="inline-flex items-center gap-2 rounded-full bg-white/6 px-3 py-1">
-                <ShieldCheck className="h-3.5 w-3.5 text-emerald-300" />
-                Paystack Verified
-              </span>
-              <span className="inline-flex items-center gap-2 rounded-full bg-white/6 px-3 py-1">
-                <Truck className="h-3.5 w-3.5 text-sky-300" />
-                Fast Delivery
-              </span>
-              <span className="inline-flex items-center gap-2 rounded-full bg-white/6 px-3 py-1">
-                <Globe2 className="h-3.5 w-3.5 text-violet-300" />
-                {loadingRates ? "Syncing rates..." : `Local currency: ${currentCurrency}`}
-              </span>
-              {lastRateSync ? (
-                <span className="text-slate-500">
-                  Rates refreshed{" "}
-                  {new Date(lastRateSync).toLocaleTimeString([], {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
-                </span>
-              ) : null}
             </div>
           </div>
         </div>
       </header>
 
-      <main>
+      <main className="min-h-[calc(100vh-4rem)] bg-[#f8f9fc]">
         <Outlet />
       </main>
 
-      <footer className="mt-24 border-t border-white/10 bg-slate-950/80">
-        <div className="mx-auto flex max-w-7xl flex-col gap-8 px-4 py-16 md:px-6">
-          <section className="gradient-ring relative overflow-hidden rounded-[28px] bg-gradient-to-r from-blue-600 to-violet-600 p-6 text-white md:rounded-[32px] md:p-8">
-            <div className="relative z-10 flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
-              <div className="max-w-2xl space-y-3">
-                <p className="text-xs font-semibold uppercase tracking-[0.35em] text-blue-100">
-                  Need a verified quote?
-                </p>
-                <h2 className="text-2xl font-semibold md:text-4xl">
-                  Source premium electronics for your team, studio, or executive desk.
+      <footer className="border-t border-white/8 bg-[#0a0d14]">
+        <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6">
+          <section className="rounded-[32px] bg-gradient-to-r from-blue-600 to-purple-600 px-6 py-8 text-white shadow-[0_30px_80px_rgba(79,70,229,0.3)] md:px-8">
+            <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+              <div className="max-w-2xl">
+                <h2 className="text-xl font-bold md:text-2xl">
+                  Need a verified quote for your team, studio, or executive desk?
                 </h2>
-                <p className="text-sm leading-7 text-blue-50/90">
-                  SirDavid Gadgets is the premium retail arm of SIRDAVID MULTI-TRADE LTD, built for verified payments and polished after-sales support.
+                <p className="mt-2 text-sm text-white/70">
+                  Source premium electronics through SirDavid Gadgets with polished support and fast order follow-up.
                 </p>
               </div>
-              <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
-                <NavLink
-                  to="/shop"
-                  className="inline-flex min-h-11 w-full items-center justify-center rounded-full bg-white px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-blue-50 sm:w-auto"
-                >
-                  Browse Products
-                </NavLink>
-                <NavLink
-                  to="/track-order"
-                  className="inline-flex min-h-11 w-full items-center justify-center rounded-full border border-white/35 px-5 py-3 text-sm font-semibold text-white transition hover:bg-white/10 sm:w-auto"
-                >
-                  Track an Order
-                </NavLink>
-              </div>
+              <NavLink
+                to="/shop"
+                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-white px-7 py-3 text-sm font-semibold text-blue-600 transition-colors hover:bg-blue-50"
+              >
+                Browse Products
+                <ArrowRight className="h-4 w-4" />
+              </NavLink>
             </div>
           </section>
 
-          <section className="grid gap-6 md:grid-cols-[1.5fr_repeat(4,1fr)] md:gap-10">
-            <div className="space-y-4 text-center md:text-left">
-              <p className="text-xs font-semibold uppercase tracking-[0.4em] text-sky-300">
-                SirDavid Gadgets
+          <div className="mt-14 grid gap-10 md:grid-cols-[1.25fr_repeat(3,1fr)]">
+            <div className="space-y-5">
+              <div className="flex items-center gap-3">
+                <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-blue-600 to-purple-600 shadow-md">
+                  <Package className="h-5 w-5 text-white" />
+                </span>
+                <div>
+                  <p className="text-base font-extrabold tracking-tight text-white">SirDavid</p>
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-500">
+                    Gadgets
+                  </p>
+                </div>
+              </div>
+              <p className="max-w-sm text-sm leading-7 text-gray-500">
+                Premium electronics and gadgets for modern living, curated for buyers who want clean pricing, reliable stock, and a polished checkout flow.
               </p>
-              <h3 className="text-2xl font-semibold text-white">Premium electronics for modern living.</h3>
-              <p className="max-w-md text-sm leading-7 text-slate-400">
-                A dark, premium storefront for phones, laptops, tablets, and accessories with Paystack hosted checkout and polished order updates.
-              </p>
-              <div className="flex flex-wrap justify-center gap-2 text-xs font-semibold text-slate-200 md:justify-start">
-                <span className="rounded-full border border-white/10 bg-white/6 px-3 py-2">Paystack</span>
-                <span className="rounded-full border border-white/10 bg-white/6 px-3 py-2">Apple Pay</span>
-                <span className="rounded-full border border-white/10 bg-white/6 px-3 py-2">Verified Domain</span>
-                <span className="rounded-full border border-white/10 bg-white/6 px-3 py-2">Fast Delivery</span>
+              <a
+                href="mailto:support@sirdavid.site"
+                className="inline-flex items-center gap-2 text-sm text-gray-500 transition-colors hover:text-white"
+              >
+                <Mail className="h-4 w-4" />
+                support@sirdavid.site
+              </a>
+              <div className="pt-2">
+                <p className="mb-3 text-xs font-semibold uppercase tracking-[0.15em] text-gray-300">
+                  Brand
+                </p>
+                <div className="flex flex-col gap-3 text-sm">
+                  <NavLink to="/legal" className="text-gray-500 transition-colors hover:text-gray-300">
+                    Legal hub
+                  </NavLink>
+                  <NavLink to="/shop" className="text-gray-500 transition-colors hover:text-gray-300">
+                    Premium sourcing
+                  </NavLink>
+                  <NavLink to="/track-order" className="text-gray-500 transition-colors hover:text-gray-300">
+                    Verified fulfillment
+                  </NavLink>
+                </div>
               </div>
             </div>
 
             {footerSections.map((section) => (
-              <div
-                key={section.key}
-                className="border-t border-white/10 pt-4 md:border-t-0 md:pt-0"
-              >
+              <div key={section.key} className="border-t border-white/8 pt-4 md:border-t-0 md:pt-0">
                 <button
                   type="button"
                   onClick={() => toggleFooterSection(section.key)}
                   className="flex min-h-11 w-full items-center justify-between text-left md:pointer-events-none"
                 >
-                  <span className="text-sm font-semibold text-white">{section.title}</span>
+                  <span className="text-xs font-semibold uppercase tracking-[0.15em] text-gray-300">
+                    {section.title}
+                  </span>
                   <ChevronDown
-                    className={`h-4 w-4 text-slate-400 transition md:hidden ${
+                    className={`h-4 w-4 text-gray-500 transition md:hidden ${
                       openFooterSections[section.key] ? "rotate-180" : ""
                     }`}
                   />
                 </button>
                 <nav
                   className={`${
-                    openFooterSections[section.key] ? "mt-3 flex" : "hidden"
-                  } flex-col gap-3 text-sm text-slate-400 md:mt-4 md:flex`}
+                    openFooterSections[section.key] ? "mt-4 flex" : "hidden"
+                  } flex-col gap-3 text-sm md:mt-5 md:flex`}
                 >
                   {section.links.map((link) =>
                     link.href.startsWith("mailto:") ? (
-                      <a key={link.label} href={link.href} className="hover:text-white">
+                      <a key={link.label} href={link.href} className="text-gray-500 transition-colors hover:text-gray-300">
                         {link.label}
                       </a>
                     ) : (
-                      <NavLink key={link.label} to={link.href} className="hover:text-white">
+                      <NavLink key={link.label} to={link.href} className="text-gray-500 transition-colors hover:text-gray-300">
                         {link.label}
                       </NavLink>
                     ),
@@ -364,10 +359,26 @@ export function StorefrontLayout() {
                 </nav>
               </div>
             ))}
-          </section>
+          </div>
 
-          <div className="border-t border-white/10 pt-6 text-center text-sm text-slate-500 md:text-left">
-            © {new Date().getFullYear()} SirDavid Gadgets. All rights reserved.
+          <div className="mt-10 flex flex-col items-center justify-between gap-4 border-t border-white/8 pt-8 text-center sm:flex-row sm:text-left">
+            <p className="text-sm text-gray-600">
+              © {new Date().getFullYear()} SirDavid Gadgets. All rights reserved.
+            </p>
+            <div className="flex flex-wrap items-center justify-center gap-3 text-xs text-gray-600">
+              <span className="inline-flex items-center gap-1.5">
+                <ShieldCheck className="h-3.5 w-3.5 text-emerald-400" />
+                Paystack Verified
+              </span>
+              <span className="inline-flex items-center gap-1.5">
+                <Zap className="h-3.5 w-3.5 text-amber-400" />
+                Apple Pay Ready
+              </span>
+              <span className="inline-flex items-center gap-1.5">
+                <Truck className="h-3.5 w-3.5 text-blue-400" />
+                Fast Delivery
+              </span>
+            </div>
           </div>
         </div>
       </footer>

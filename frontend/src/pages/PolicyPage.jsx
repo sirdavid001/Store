@@ -1,3 +1,4 @@
+import { ShieldCheck } from "lucide-react";
 import { NavLink } from "react-router-dom";
 
 import { policyContent, policyLinks } from "../data/storeData";
@@ -10,36 +11,50 @@ export function PolicyPage({ policyKey }) {
   }
 
   return (
-    <div className="mx-auto grid max-w-7xl gap-8 px-4 py-16 md:px-6 lg:grid-cols-[0.75fr_1.25fr]">
-      <aside className="section-frame h-fit rounded-[32px] p-6">
-        <p className="text-xs font-semibold uppercase tracking-[0.35em] text-sky-300">Legal</p>
-        <h1 className="mt-4 text-4xl font-semibold text-white">{content.title}</h1>
-        <p className="mt-4 text-sm leading-7 text-slate-300">{content.intro}</p>
-        <nav className="mt-8 space-y-2">
-          {policyLinks.map((link) => (
-            <NavLink
-              key={link.key}
-              to={link.href}
-              className={({ isActive }) =>
-                `block rounded-[20px] px-4 py-3 text-sm font-medium transition ${
-                  isActive ? "bg-white text-slate-950" : "bg-white/5 text-slate-300 hover:bg-white/10 hover:text-white"
-                }`
-              }
-            >
-              {link.title}
-            </NavLink>
-          ))}
-        </nav>
-      </aside>
-
-      <section className="space-y-5">
-        {content.sections.map((section) => (
-          <article key={section.heading} className="section-frame rounded-[32px] p-6">
-            <h2 className="text-2xl font-semibold text-white">{section.heading}</h2>
-            <p className="mt-4 text-sm leading-8 text-slate-300">{section.body}</p>
-          </article>
-        ))}
+    <div className="bg-[#f8f9fc] pb-16 text-gray-900">
+      <section className="bg-gradient-to-br from-blue-700 via-indigo-700 to-purple-700 px-4 py-16 text-center text-white sm:px-6">
+        <div className="mx-auto max-w-3xl">
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-white/15">
+            <ShieldCheck className="h-7 w-7" />
+          </div>
+          <h1 className="mt-5 text-3xl font-extrabold tracking-tight">{content.title}</h1>
+          <p className="mt-3 text-sm text-blue-200">{content.intro}</p>
+        </div>
       </section>
+
+      <div className="relative z-10 mx-auto -mt-6 max-w-3xl px-4 sm:px-6">
+        <div className="rounded-[28px] border border-gray-100 bg-white px-8 py-10 shadow-sm">
+          <nav className="mb-8 flex flex-wrap gap-2 border-b border-gray-100 pb-6">
+            {policyLinks.map((link) => (
+              <NavLink
+                key={link.key}
+                to={link.href}
+                className={({ isActive }) =>
+                  `rounded-xl px-4 py-2 text-sm transition ${
+                    isActive
+                      ? "bg-blue-50 font-semibold text-blue-600"
+                      : "text-gray-500 hover:bg-gray-50 hover:text-gray-900"
+                  }`
+                }
+              >
+                {link.title}
+              </NavLink>
+            ))}
+          </nav>
+
+          <div className="space-y-8">
+            {content.sections.map((section, index) => (
+              <article
+                key={section.heading}
+                className={index === content.sections.length - 1 ? "" : "border-b border-gray-100 pb-8"}
+              >
+                <h2 className="text-xl font-bold text-gray-900">{section.heading}</h2>
+                <p className="mt-4 text-sm leading-relaxed text-gray-600">{section.body}</p>
+              </article>
+            ))}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

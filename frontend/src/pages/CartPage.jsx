@@ -1,4 +1,15 @@
-import { Minus, Plus, ShieldCheck, ShoppingBag, Trash2 } from "lucide-react";
+import {
+  CheckCircle2,
+  ChevronDown,
+  ChevronRight,
+  Lock,
+  Minus,
+  Plus,
+  ShieldCheck,
+  ShoppingBag,
+  Trash2,
+  Truck,
+} from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 
@@ -37,6 +48,42 @@ function readCheckoutProfile() {
   }
 }
 
+function conditionClasses(condition) {
+  const tones = {
+    New: "border border-emerald-100 bg-emerald-50 text-emerald-700",
+    "Like New": "border border-blue-100 bg-blue-50 text-blue-700",
+    Excellent: "border border-purple-100 bg-purple-50 text-purple-700",
+    Good: "border border-amber-100 bg-amber-50 text-amber-700",
+    Refurbished: "border border-orange-100 bg-orange-50 text-orange-700",
+    Fair: "border border-gray-200 bg-gray-100 text-gray-600",
+    "Certified Refurbished": "border border-orange-100 bg-orange-50 text-orange-700",
+    "Open Box": "border border-blue-100 bg-blue-50 text-blue-700",
+  };
+
+  return tones[condition] || "border border-gray-200 bg-gray-100 text-gray-600";
+}
+
+function SectionCard({ icon: Icon, title, children }) {
+  return (
+    <section className="overflow-hidden rounded-[28px] border border-gray-100 bg-white shadow-sm">
+      <div className="flex items-center gap-3 border-b border-gray-100 bg-gray-50/80 px-6 py-4">
+        <Icon className="h-5 w-5 text-blue-600" />
+        <h2 className="font-semibold text-gray-800">{title}</h2>
+      </div>
+      <div className="px-6 py-5">{children}</div>
+    </section>
+  );
+}
+
+function Field({ label, children }) {
+  return (
+    <label className="space-y-2">
+      <span className="text-sm font-medium text-gray-700">{label}</span>
+      {children}
+    </label>
+  );
+}
+
 export function CartPage() {
   const {
     cartLines,
@@ -50,7 +97,9 @@ export function CartPage() {
     removeFromCart,
     beginHostedCheckout,
     formatPrice,
+    clearCart,
   } = useStore();
+  const [mobileSummaryOpen, setMobileSummaryOpen] = useState(false);
   const [checkoutProfile, setCheckoutProfile] = useState(() => {
     const stored = readCheckoutProfile();
     return (
@@ -81,6 +130,19 @@ export function CartPage() {
     }
     return `Displayed prices are converted estimates. Paystack checkout will settle in ${settlementCurrency}.`;
   }, [currentCurrency, settlementCurrency]);
+
+  const freeShippingGap =
+    shippingConfig.mode === "free-threshold"
+      ? Math.max(shippingConfig.freeThresholdUsd - subtotalUsd, 0)
+      : 0;
+  const freeShippingUnlocked =
+    shippingConfig.mode === "free-threshold" ? freeShippingGap <= 0 : shippingUsd === 0;
+  const freeShippingProgress =
+    shippingConfig.mode === "free-threshold" && shippingConfig.freeThresholdUsd > 0
+      ? Math.min((subtotalUsd / shippingConfig.freeThresholdUsd) * 100, 100)
+      : freeShippingUnlocked
+        ? 100
+        : 0;
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -131,293 +193,386 @@ export function CartPage() {
 
   if (!cartLines.length) {
     return (
-      <div className="mx-auto flex min-h-[60vh] max-w-3xl flex-col items-center justify-center gap-5 px-4 text-center">
-        <div className="rounded-full border border-white/10 bg-white/5 p-4 text-sky-300">
-          <ShoppingBag className="h-7 w-7" />
+      <div className="bg-[#f8f9fc] px-4 py-20 sm:px-6">
+        <div className="mx-auto max-w-sm rounded-[32px] border border-gray-100 bg-white p-10 text-center shadow-sm">
+          <div className="mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-blue-50 to-purple-50">
+            <ShoppingBag className="h-10 w-10 text-blue-400" />
+          </div>
+          <h1 className="text-2xl font-bold text-gray-900">Your cart is empty.</h1>
+          <p className="mt-3 text-sm text-gray-400">
+            Add a premium device or accessory to begin checkout and continue to secure payment.
+          </p>
+          <Link
+            to="/shop"
+            className="mt-7 inline-flex h-12 w-full items-center justify-center rounded-2xl bg-gradient-to-r from-blue-600 to-purple-600 text-sm font-semibold text-white transition-all hover:shadow-lg hover:shadow-blue-500/25"
+          >
+            Continue shopping
+          </Link>
         </div>
-        <h1 className="text-4xl font-semibold text-white">Your cart is empty.</h1>
-        <p className="max-w-xl text-base leading-8 text-slate-300">
-          Add a premium device or accessory to begin checkout and continue to secure payment.
-        </p>
-        <Link
-          to="/shop"
-          className="rounded-full bg-white px-6 py-3 text-sm font-semibold text-slate-950 transition hover:bg-blue-50"
-        >
-          Continue shopping
-        </Link>
       </div>
     );
   }
 
   return (
-    <div className="mx-auto grid max-w-7xl gap-8 px-4 py-12 pb-32 md:px-6 md:py-16 md:pb-16 lg:grid-cols-[1.2fr_0.8fr]">
-      <section className="space-y-6">
-        <div className="space-y-3">
-          <p className="text-sm font-semibold uppercase tracking-[0.22em] text-sky-300 md:text-xs md:tracking-[0.35em]">
-            Cart
-          </p>
-          <h1 className="text-3xl font-semibold text-white md:text-4xl">
-            Your premium checkout shortlist
-          </h1>
+    <div className="bg-[#f8f9fc] pb-32 text-gray-900 lg:pb-16">
+      <div className="border-b border-gray-100 bg-white">
+        <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-2 px-4 py-4 text-sm text-gray-500 sm:px-6">
+          <Link to="/shop" className="transition-colors hover:text-blue-600">
+            Shop
+          </Link>
+          <ChevronRight className="h-4 w-4 text-gray-300" />
+          <span className="font-medium text-gray-900">Cart</span>
         </div>
+      </div>
 
-        <div className="space-y-4">
-          {cartLines.map((item) => (
-            <article
-              key={item.id}
-              className="section-frame grid gap-4 rounded-[26px] p-4 sm:grid-cols-[140px_1fr] lg:grid-cols-[140px_1fr_auto]"
-            >
-              <img
-                src={item.image}
-                alt={item.name}
-                className="aspect-[4/3] w-full rounded-[22px] object-cover sm:h-36 sm:aspect-auto sm:rounded-[24px]"
-              />
-              <div className="space-y-3">
-                <div className="flex flex-wrap items-center gap-3">
-                  <p className="text-sm font-semibold uppercase tracking-[0.18em] text-sky-300 md:text-xs md:tracking-[0.3em]">
-                    {item.brand}
-                  </p>
-                  <span className="inline-flex min-h-11 items-center rounded-full border border-white/10 bg-white/6 px-3 py-1 text-sm font-semibold text-white md:min-h-0 md:text-xs">
-                    {item.condition}
-                  </span>
-                </div>
-                <h2 className="text-xl font-semibold text-white sm:text-2xl">{item.name}</h2>
-                <p className="text-sm leading-7 text-slate-300">{item.shortDescription}</p>
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <div className="flex items-center gap-3">
-                    <button
-                      type="button"
-                      onClick={() => updateCartQuantity(item.id, item.quantity - 1)}
-                      className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white transition hover:bg-white/10"
-                    >
-                      <Minus className="h-4 w-4" />
-                    </button>
-                    <span className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-full bg-white/8 px-4 py-2 text-sm font-semibold text-white">
-                      {item.quantity}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => updateCartQuantity(item.id, item.quantity + 1)}
-                      className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white transition hover:bg-white/10"
-                    >
-                      <Plus className="h-4 w-4" />
-                    </button>
+      <div className="border-b border-gray-100 bg-white shadow-sm lg:hidden">
+        <button
+          type="button"
+          onClick={() => setMobileSummaryOpen((current) => !current)}
+          className="flex w-full items-center justify-between px-4 py-3.5"
+        >
+          <span className="flex items-center gap-2 text-sm font-semibold text-blue-600">
+            <ShoppingBag className="h-4 w-4" />
+            Show order summary
+          </span>
+          <div className="flex items-center gap-2">
+            <span className="font-extrabold text-gray-900">{formatPrice(totalUsd)}</span>
+            <ChevronDown className={`h-4 w-4 text-gray-400 transition ${mobileSummaryOpen ? "rotate-180" : ""}`} />
+          </div>
+        </button>
+
+        {mobileSummaryOpen ? (
+          <div className="border-t border-gray-100 bg-gray-50 px-4 pb-5">
+            <div className="space-y-3 pt-4">
+              {cartLines.map((item) => (
+                <div key={item.id} className="flex items-center gap-3">
+                  <div className="h-10 w-10 overflow-hidden rounded-xl bg-gray-100">
+                    <img src={item.image} alt={item.name} className="h-full w-full object-cover" />
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => removeFromCart(item.id)}
-                    className="inline-flex min-h-11 items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-slate-300 transition hover:bg-white/10 hover:text-white"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                    Remove
-                  </button>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-xs font-medium text-gray-800">{item.name}</p>
+                    <p className="text-xs text-gray-400">
+                      Qty {item.quantity}
+                    </p>
+                  </div>
+                  <p className="text-sm font-semibold text-gray-900">{formatPrice(item.lineTotalUsd)}</p>
                 </div>
-              </div>
-              <div className="flex items-center justify-between gap-4 lg:flex-col lg:items-end lg:justify-between">
-                <p className="text-xl font-semibold text-white sm:text-2xl">{formatPrice(item.lineTotalUsd)}</p>
-              </div>
-            </article>
-          ))}
-        </div>
-      </section>
-
-      <aside className="space-y-6">
-        <div className="section-frame rounded-[28px] p-5 sm:rounded-[32px] sm:p-6">
-          <div className="flex items-center gap-3 rounded-[24px] bg-emerald-500/10 p-4 text-sm text-emerald-200">
-            <ShieldCheck className="h-5 w-5" />
-            Secure checkout and delivery updates are handled in one premium flow.
-          </div>
-
-          <div className="mt-6 space-y-4">
-            <div className="flex items-center justify-between text-sm text-slate-300">
-              <span>Subtotal</span>
-              <span className="font-semibold text-white">{formatPrice(subtotalUsd)}</span>
-            </div>
-            <div className="flex items-center justify-between text-sm text-slate-300">
-              <span>
-                Shipping{" "}
-                <span className="text-slate-500">
-                  ({shippingConfig.mode === "free-threshold" ? "threshold" : shippingConfig.mode})
-                </span>
-              </span>
-              <span className="font-semibold text-white">{formatPrice(shippingUsd)}</span>
-            </div>
-            <div className="border-t border-white/10 pt-4">
-              <div className="flex items-center justify-between">
-                <span className="text-base font-semibold text-white">Estimated total</span>
-                <span className="text-3xl font-semibold text-white">{formatPrice(totalUsd)}</span>
-              </div>
+              ))}
             </div>
           </div>
+        ) : null}
+      </div>
 
-          <div className="mt-6 border-t border-white/10 pt-6">
-            <h2 className="text-xl font-semibold text-white">Checkout details</h2>
-            <p className="mt-3 text-sm leading-7 text-slate-300">
-              Enter the customer and delivery details Paystack and order confirmation need before you continue.
-            </p>
+      <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
+        <div className="grid gap-8 lg:grid-cols-[1.25fr_0.75fr]">
+          <div className="space-y-6">
+            <div>
+              <h1 className="text-3xl font-extrabold tracking-tight text-gray-900">Your cart</h1>
+              <p className="mt-1 text-sm text-gray-400">Review premium items before checkout.</p>
+            </div>
 
-            <div className="mt-5 grid gap-4">
+            {shippingConfig.mode === "free-threshold" ? (
+              freeShippingUnlocked ? (
+                <div className="rounded-2xl border border-emerald-100 bg-emerald-50 px-5 py-4">
+                  <div className="flex items-start gap-3">
+                    <CheckCircle2 className="mt-0.5 h-5 w-5 text-emerald-600" />
+                    <div>
+                      <p className="text-sm text-emerald-700">
+                        Free shipping unlocked for this cart.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="rounded-2xl border border-blue-100 bg-blue-50 px-5 py-4">
+                  <div className="flex items-start gap-3">
+                    <Truck className="mt-0.5 h-5 w-5 text-blue-500" />
+                    <div className="flex-1">
+                      <p className="text-sm text-blue-700">
+                        Add {formatPrice(freeShippingGap)} more to unlock free shipping.
+                      </p>
+                      <div className="mt-3 h-2 rounded-full bg-blue-200">
+                        <div
+                          className="h-full rounded-full bg-gradient-to-r from-blue-500 to-purple-500"
+                          style={{ width: `${freeShippingProgress}%` }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )
+            ) : null}
+
+            <SectionCard icon={ShoppingBag} title="Cart items">
+              <div className="space-y-5">
+                {cartLines.map((item) => (
+                  <article
+                    key={item.id}
+                    className="flex flex-col gap-4 border-b border-gray-100 pb-5 last:border-b-0 last:pb-0 sm:flex-row"
+                  >
+                    <div className="h-20 w-20 overflow-hidden rounded-2xl bg-gray-100">
+                      <img src={item.image} alt={item.name} className="h-full w-full object-cover" />
+                    </div>
+                    <div className="flex-1">
+                      <Link
+                        to={`/product/${item.id}`}
+                        className="text-base font-semibold text-gray-900 transition-colors hover:text-blue-600"
+                      >
+                        {item.name}
+                      </Link>
+                      <div className="mt-1 flex flex-wrap items-center gap-2 text-xs">
+                        <span className="text-gray-400">{item.brand}</span>
+                        <span className={`rounded-full px-2 py-0.5 ${conditionClasses(item.condition)}`}>
+                          {item.condition}
+                        </span>
+                      </div>
+                      <p className="mt-1 text-xs text-gray-400">Unit price {formatPrice(item.priceUsd)}</p>
+                    </div>
+                    <div className="flex items-center justify-between gap-4 sm:flex-col sm:items-end">
+                      <div className="inline-flex overflow-hidden rounded-xl border border-gray-200 bg-white">
+                        <button
+                          type="button"
+                          onClick={() => updateCartQuantity(item.id, item.quantity - 1)}
+                          className="flex h-8 w-8 items-center justify-center text-gray-600 transition hover:bg-gray-50"
+                        >
+                          <Minus className="h-4 w-4" />
+                        </button>
+                        <span className="flex h-8 w-8 items-center justify-center border-x border-gray-200 text-sm font-semibold text-gray-900">
+                          {item.quantity}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => updateCartQuantity(item.id, item.quantity + 1)}
+                          className="flex h-8 w-8 items-center justify-center text-gray-600 transition hover:bg-gray-50"
+                        >
+                          <Plus className="h-4 w-4" />
+                        </button>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => removeFromCart(item.id)}
+                        className="inline-flex items-center gap-1 rounded-xl px-2.5 py-1.5 text-xs text-red-400 transition-colors hover:bg-red-50 hover:text-red-600"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                        Remove
+                      </button>
+                      <p className="text-base font-bold text-gray-900">{formatPrice(item.lineTotalUsd)}</p>
+                    </div>
+                  </article>
+                ))}
+              </div>
+
+              <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
+                <Link
+                  to="/shop"
+                  className="text-sm font-medium text-blue-600 transition-colors hover:text-blue-800"
+                >
+                  ← Continue Shopping
+                </Link>
+                <button
+                  type="button"
+                  onClick={clearCart}
+                  className="rounded-lg px-2 py-1 text-xs text-red-400 transition-colors hover:bg-red-50 hover:text-red-600"
+                >
+                  Clear cart
+                </button>
+              </div>
+            </SectionCard>
+
+            <SectionCard icon={ShieldCheck} title="Customer details">
               <div className="grid gap-4 sm:grid-cols-2">
-                <label className="space-y-2">
-                  <span className="text-sm font-semibold text-white">First name</span>
+                <Field label="First name">
                   <input
                     value={checkoutProfile.customer.firstName}
                     onChange={(event) => updateCustomerField("firstName", event.target.value)}
-                    className="w-full rounded-[22px] border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-sky-400"
+                    className="h-11 w-full rounded-xl border border-gray-200 bg-white px-4 text-sm text-gray-900 outline-none transition-all focus:border-blue-400 focus:ring-2 focus:ring-blue-500/10"
                   />
-                </label>
-                <label className="space-y-2">
-                  <span className="text-sm font-semibold text-white">Last name</span>
+                </Field>
+                <Field label="Last name">
                   <input
                     value={checkoutProfile.customer.lastName}
                     onChange={(event) => updateCustomerField("lastName", event.target.value)}
-                    className="w-full rounded-[22px] border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-sky-400"
+                    className="h-11 w-full rounded-xl border border-gray-200 bg-white px-4 text-sm text-gray-900 outline-none transition-all focus:border-blue-400 focus:ring-2 focus:ring-blue-500/10"
                   />
-                </label>
+                </Field>
+                <Field label="Email">
+                  <input
+                    type="email"
+                    value={checkoutProfile.customer.email}
+                    onChange={(event) => updateCustomerField("email", event.target.value)}
+                    className="h-11 w-full rounded-xl border border-gray-200 bg-white px-4 text-sm text-gray-900 outline-none transition-all focus:border-blue-400 focus:ring-2 focus:ring-blue-500/10"
+                  />
+                </Field>
+                <Field label="Phone number">
+                  <input
+                    value={checkoutProfile.customer.phone}
+                    onChange={(event) => updateCustomerField("phone", event.target.value)}
+                    className="h-11 w-full rounded-xl border border-gray-200 bg-white px-4 text-sm text-gray-900 outline-none transition-all focus:border-blue-400 focus:ring-2 focus:ring-blue-500/10"
+                  />
+                </Field>
+              </div>
+            </SectionCard>
+
+            <SectionCard icon={Truck} title="Delivery details">
+              <div className="grid gap-4">
+                <Field label="Address line 1">
+                  <input
+                    value={checkoutProfile.address.addressLine1}
+                    onChange={(event) => updateAddressField("addressLine1", event.target.value)}
+                    className="h-11 w-full rounded-xl border border-gray-200 bg-white px-4 text-sm text-gray-900 outline-none transition-all focus:border-blue-400 focus:ring-2 focus:ring-blue-500/10"
+                  />
+                </Field>
+
+                <Field label="Address line 2">
+                  <input
+                    value={checkoutProfile.address.addressLine2}
+                    onChange={(event) => updateAddressField("addressLine2", event.target.value)}
+                    className="h-11 w-full rounded-xl border border-gray-200 bg-white px-4 text-sm text-gray-900 outline-none transition-all focus:border-blue-400 focus:ring-2 focus:ring-blue-500/10"
+                  />
+                </Field>
+
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <Field label="City">
+                    <input
+                      value={checkoutProfile.address.city}
+                      onChange={(event) => updateAddressField("city", event.target.value)}
+                      className="h-11 w-full rounded-xl border border-gray-200 bg-white px-4 text-sm text-gray-900 outline-none transition-all focus:border-blue-400 focus:ring-2 focus:ring-blue-500/10"
+                    />
+                  </Field>
+                  <Field label="State">
+                    <input
+                      value={checkoutProfile.address.state}
+                      onChange={(event) => updateAddressField("state", event.target.value)}
+                      className="h-11 w-full rounded-xl border border-gray-200 bg-white px-4 text-sm text-gray-900 outline-none transition-all focus:border-blue-400 focus:ring-2 focus:ring-blue-500/10"
+                    />
+                  </Field>
+                </div>
+
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <Field label="Country">
+                    <input
+                      value={checkoutProfile.address.country}
+                      onChange={(event) => updateAddressField("country", event.target.value)}
+                      className="h-11 w-full rounded-xl border border-gray-200 bg-white px-4 text-sm text-gray-900 outline-none transition-all focus:border-blue-400 focus:ring-2 focus:ring-blue-500/10"
+                    />
+                  </Field>
+                  <Field label="Postal code">
+                    <input
+                      value={checkoutProfile.address.postalCode}
+                      onChange={(event) => updateAddressField("postalCode", event.target.value)}
+                      className="h-11 w-full rounded-xl border border-gray-200 bg-white px-4 text-sm text-gray-900 outline-none transition-all focus:border-blue-400 focus:ring-2 focus:ring-blue-500/10"
+                    />
+                  </Field>
+                </div>
+
+                <Field label="Delivery instructions">
+                  <textarea
+                    rows={3}
+                    value={checkoutProfile.address.deliveryInstructions}
+                    onChange={(event) => updateAddressField("deliveryInstructions", event.target.value)}
+                    className="min-h-[80px] w-full resize-none rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 outline-none transition-all focus:border-blue-400 focus:ring-2 focus:ring-blue-500/10"
+                  />
+                </Field>
+
+                <Field label="Payment method">
+                  <SelectField
+                    value={checkoutProfile.paymentMethod}
+                    onValueChange={(value) =>
+                      setCheckoutProfile((current) => ({ ...current, paymentMethod: value }))
+                    }
+                    options={paymentMethodOptions}
+                    placeholder="Choose payment method"
+                    triggerClassName="h-11 rounded-xl border-gray-200 bg-white text-sm text-gray-700"
+                  />
+                </Field>
+              </div>
+            </SectionCard>
+          </div>
+
+          <aside className="space-y-6 lg:sticky lg:top-24 lg:self-start">
+            <div className="rounded-[28px] border border-gray-100 bg-white p-6 shadow-sm">
+              <h2 className="text-lg font-bold text-gray-900">Order summary</h2>
+
+              <div className="mt-5 space-y-3">
+                {cartLines.map((item) => (
+                  <div key={item.id} className="flex items-center gap-3">
+                    <div className="h-10 w-10 overflow-hidden rounded-xl bg-gray-100">
+                      <img src={item.image} alt={item.name} className="h-full w-full object-cover" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-medium text-gray-900">{item.name}</p>
+                      <p className="text-xs text-gray-400">Qty {item.quantity}</p>
+                    </div>
+                    <p className="text-sm font-semibold text-gray-900">{formatPrice(item.lineTotalUsd)}</p>
+                  </div>
+                ))}
               </div>
 
-              <label className="space-y-2">
-                <span className="text-sm font-semibold text-white">Email</span>
-                <input
-                  type="email"
-                  value={checkoutProfile.customer.email}
-                  onChange={(event) => updateCustomerField("email", event.target.value)}
-                  className="w-full rounded-[22px] border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-sky-400"
-                />
-              </label>
-
-              <label className="space-y-2">
-                <span className="text-sm font-semibold text-white">Phone number</span>
-                <input
-                  value={checkoutProfile.customer.phone}
-                  onChange={(event) => updateCustomerField("phone", event.target.value)}
-                  className="w-full rounded-[22px] border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-sky-400"
-                />
-              </label>
-
-              <label className="space-y-2">
-                <span className="text-sm font-semibold text-white">Address line 1</span>
-                <input
-                  value={checkoutProfile.address.addressLine1}
-                  onChange={(event) => updateAddressField("addressLine1", event.target.value)}
-                  className="w-full rounded-[22px] border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-sky-400"
-                />
-              </label>
-
-              <label className="space-y-2">
-                <span className="text-sm font-semibold text-white">Address line 2</span>
-                <input
-                  value={checkoutProfile.address.addressLine2}
-                  onChange={(event) => updateAddressField("addressLine2", event.target.value)}
-                  className="w-full rounded-[22px] border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-sky-400"
-                />
-              </label>
-
-              <div className="grid gap-4 sm:grid-cols-2">
-                <label className="space-y-2">
-                  <span className="text-sm font-semibold text-white">City</span>
-                  <input
-                    value={checkoutProfile.address.city}
-                    onChange={(event) => updateAddressField("city", event.target.value)}
-                    className="w-full rounded-[22px] border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-sky-400"
-                  />
-                </label>
-                <label className="space-y-2">
-                  <span className="text-sm font-semibold text-white">State</span>
-                  <input
-                    value={checkoutProfile.address.state}
-                    onChange={(event) => updateAddressField("state", event.target.value)}
-                    className="w-full rounded-[22px] border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-sky-400"
-                  />
-                </label>
+              <div className="mt-5 border-t border-gray-100 pt-5">
+                <div className="flex items-center justify-between text-sm text-gray-600">
+                  <span>Subtotal</span>
+                  <span className="font-medium text-gray-900">{formatPrice(subtotalUsd)}</span>
+                </div>
+                <div className="mt-3 flex items-center justify-between text-sm text-gray-600">
+                  <span>Shipping</span>
+                  <span className={shippingUsd === 0 ? "font-semibold text-emerald-600" : "font-medium text-gray-900"}>
+                    {shippingUsd === 0 ? "FREE" : formatPrice(shippingUsd)}
+                  </span>
+                </div>
+                <div className="mt-4 flex items-center justify-between border-t border-gray-100 pt-4">
+                  <span className="text-sm font-semibold text-gray-900">Total</span>
+                  <span className="text-xl font-extrabold text-blue-700">{formatPrice(totalUsd)}</span>
+                </div>
               </div>
 
-              <div className="grid gap-4 sm:grid-cols-2">
-                <label className="space-y-2">
-                  <span className="text-sm font-semibold text-white">Country</span>
-                  <input
-                    value={checkoutProfile.address.country}
-                    onChange={(event) => updateAddressField("country", event.target.value)}
-                    className="w-full rounded-[22px] border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-sky-400"
-                  />
-                </label>
-                <label className="space-y-2">
-                  <span className="text-sm font-semibold text-white">Postal code</span>
-                  <input
-                    value={checkoutProfile.address.postalCode}
-                    onChange={(event) => updateAddressField("postalCode", event.target.value)}
-                    className="w-full rounded-[22px] border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-sky-400"
-                  />
-                </label>
+              <button
+                type="button"
+                onClick={beginCheckout}
+                disabled={checkoutPending}
+                className="mt-6 inline-flex h-14 w-full items-center justify-center rounded-2xl bg-gradient-to-r from-blue-600 to-purple-600 text-base font-bold text-white transition-all hover:shadow-xl hover:shadow-blue-500/30 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                <LoadingInlineLabel
+                  loading={checkoutPending}
+                  idleLabel="Checkout with Paystack"
+                  loadingLabel="Processing..."
+                  minWidthClass="min-w-[210px]"
+                />
+              </button>
+
+              <div className="mt-3 flex items-center justify-center gap-2 text-xs text-gray-400">
+                <Lock className="h-3.5 w-3.5 text-gray-300" />
+                Secured by Paystack
               </div>
 
-              <label className="space-y-2">
-                <span className="text-sm font-semibold text-white">Delivery instructions</span>
-                <textarea
-                  value={checkoutProfile.address.deliveryInstructions}
-                  onChange={(event) => updateAddressField("deliveryInstructions", event.target.value)}
-                  rows={3}
-                  className="w-full rounded-[22px] border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-sky-400"
-                />
-              </label>
-
-              <div className="space-y-2">
-                <span className="text-sm font-semibold text-white">Payment method</span>
-                <SelectField
-                  value={checkoutProfile.paymentMethod}
-                  onValueChange={(value) =>
-                    setCheckoutProfile((current) => ({ ...current, paymentMethod: value }))
-                  }
-                  options={paymentMethodOptions}
-                  placeholder="Choose payment method"
-                />
-              </div>
+              {currentCurrency !== settlementCurrency ? (
+                <div className="mt-4 flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs text-amber-700">
+                  <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0" />
+                  {checkoutNote}
+                </div>
+              ) : (
+                <p className="mt-4 text-xs text-gray-400">{checkoutNote}</p>
+              )}
             </div>
-          </div>
-
-          <button
-            type="button"
-            onClick={beginCheckout}
-            disabled={checkoutPending}
-            className="mt-6 hidden min-h-11 w-full rounded-full bg-white px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-blue-50 md:block"
-          >
-            <LoadingInlineLabel
-              loading={checkoutPending}
-              idleLabel="Checkout with Paystack"
-              loadingLabel="Redirecting..."
-              minWidthClass="min-w-[210px]"
-            />
-          </button>
-
-          <div className="mt-5 rounded-[24px] border border-white/10 bg-black/20 p-4 text-sm leading-7 text-slate-300">
-            Supported channels: card, bank transfer, USSD, and Apple Pay on Safari. {checkoutNote}
-          </div>
+          </aside>
         </div>
+      </div>
 
-        <div className="section-frame rounded-[28px] p-5 sm:rounded-[32px] sm:p-6">
-          <h2 className="text-xl font-semibold text-white">Need delivery clarity?</h2>
-          <p className="mt-3 text-sm leading-7 text-slate-300">
-            Shipping rules can be configured as flat fee, percentage of cart value, or waived after a free-shipping threshold in the secure admin portal.
-          </p>
-        </div>
-      </aside>
-
-      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-white/10 bg-slate-950/95 px-4 py-3 backdrop-blur-2xl md:hidden">
+      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-gray-200 bg-white/95 p-4 backdrop-blur-xl lg:hidden">
         <div className="mx-auto flex max-w-7xl items-center gap-3">
           <div className="min-w-0 flex-1">
-            <p className="text-sm text-slate-400">Estimated total</p>
-            <p className="truncate text-lg font-semibold text-white">{formatPrice(totalUsd)}</p>
+            <p className="text-xs text-gray-500">Estimated total</p>
+            <p className="truncate text-lg font-extrabold text-gray-900">{formatPrice(totalUsd)}</p>
           </div>
           <button
             type="button"
             onClick={beginCheckout}
             disabled={checkoutPending}
-            className="inline-flex min-h-11 flex-[1.3] items-center justify-center rounded-full bg-white px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-blue-50 disabled:opacity-70"
+            className="inline-flex h-12 flex-1 items-center justify-center rounded-2xl bg-gradient-to-r from-blue-600 to-purple-600 px-5 text-sm font-semibold text-white transition-all hover:shadow-lg hover:shadow-blue-500/25 disabled:opacity-60"
           >
             <LoadingInlineLabel
               loading={checkoutPending}
               idleLabel="Checkout"
-              loadingLabel="Redirecting..."
+              loadingLabel="Processing..."
               minWidthClass="min-w-[132px]"
             />
           </button>

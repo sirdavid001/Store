@@ -157,16 +157,16 @@ export function PageSpinner({ fullScreen = false }) {
   return (
     <div
       className={`flex items-center justify-center px-6 py-16 ${
-        fullScreen ? "min-h-screen" : "min-h-[40vh]"
+        fullScreen ? "min-h-screen bg-[#f8f9fc]" : "min-h-[40vh]"
       }`}
     >
       <div className="flex flex-col items-center gap-4 text-center">
         <div
-          className={`brand-spinner h-12 w-12 rounded-full border border-white/10 ${
+          className={`brand-spinner h-12 w-12 rounded-full border border-gray-200 ${
             reducedMotion ? "" : "animate-spin"
           }`}
         />
-        <p className="text-sm text-slate-400">Loading…</p>
+        <p className="text-sm text-gray-500">Loading…</p>
       </div>
     </div>
   );
@@ -245,27 +245,27 @@ export function ProductGridSkeleton({ count = 6 }) {
 export function TrackOrderSkeleton() {
   return (
     <div className="space-y-6">
-      <div className="rounded-[28px] border border-white/10 bg-white/5 p-5 sm:rounded-[32px] sm:p-6">
-        <SkeletonBlock className="h-4 w-28 bg-white/10" />
-        <SkeletonBlock className="mt-4 h-10 w-48 bg-white/10" />
+      <div className="rounded-[28px] border border-gray-100 bg-white p-5 shadow-sm sm:rounded-[32px] sm:p-6">
+        <SkeletonBlock className="h-4 w-28" />
+        <SkeletonBlock className="mt-4 h-10 w-48" />
         <div className="mt-6 grid gap-4 sm:grid-cols-2">
-          <SkeletonBlock className="h-28 bg-white/10" />
-          <SkeletonBlock className="h-28 bg-white/10" />
+          <SkeletonBlock className="h-28" />
+          <SkeletonBlock className="h-28" />
         </div>
       </div>
-      <div className="rounded-[28px] border border-white/10 bg-white/5 p-5 sm:rounded-[32px] sm:p-6">
-        <SkeletonBlock className="h-8 w-40 bg-white/10" />
+      <div className="rounded-[28px] border border-gray-100 bg-white p-5 shadow-sm sm:rounded-[32px] sm:p-6">
+        <SkeletonBlock className="h-8 w-40" />
         <div className="mt-6 space-y-4">
           {Array.from({ length: 3 }).map((_, index) => (
             <div
               key={`timeline-skeleton-${index}`}
-              className="flex flex-col gap-4 rounded-[24px] border border-white/10 bg-white/5 p-4 sm:flex-row"
+              className="flex flex-col gap-4 rounded-[24px] border border-gray-100 bg-gray-50 p-4 sm:flex-row"
             >
-              <SkeletonBlock className="h-10 w-10 rounded-full bg-white/10" />
+              <SkeletonBlock className="h-10 w-10 rounded-full" />
               <div className="flex-1 space-y-3">
-                <SkeletonBlock className="h-5 w-40 bg-white/10" />
-                <SkeletonBlock className="h-4 w-full bg-white/10" />
-                <SkeletonBlock className="h-4 w-2/3 bg-white/10" />
+                <SkeletonBlock className="h-5 w-40" />
+                <SkeletonBlock className="h-4 w-full" />
+                <SkeletonBlock className="h-4 w-2/3" />
               </div>
             </div>
           ))}
