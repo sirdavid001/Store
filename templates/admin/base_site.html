@@ -1,0 +1,41 @@
+{% extends "admin/base.html" %}
+{% load i18n static %}
+
+{% block title %}{% if subtitle %}{{ subtitle }} | {% endif %}{{ title }} | {{ store_name }} Admin{% endblock %}
+
+{% block extrahead %}
+{{ block.super }}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Sora:wght@500;600;700&display=swap" rel="stylesheet">
+{% endblock %}
+
+{% block extrastyle %}
+{{ block.super }}
+<link rel="stylesheet" href="{% static 'css/admin-theme.css' %}">
+{% endblock %}
+
+{% block branding %}
+<a class="sd-admin-brand" href="{% url 'admin:index' %}">
+    <span class="sd-admin-brand-mark">SD</span>
+    <span class="sd-admin-brand-copy">
+        <strong>SirDavid <span>Gadgets</span></strong>
+        <small>{{ store_legal_name }}</small>
+    </span>
+</a>
+<p class="sd-admin-tagline">Premium operations console for products, orders, payments, and fulfillment.</p>
+{% endblock %}
+
+{% block nav-global %}
+<div class="sd-admin-quicklinks">
+    <a href="{{ site_url }}">View storefront</a>
+    <a href="/secure-admin-portal-xyz/">React portal</a>
+</div>
+{% endblock %}
+
+{% block footer %}
+<div class="sd-admin-footer">
+    <span>{{ store_name }} admin</span>
+    <span>Secure internal operations for {{ store_legal_name }}</span>
+</div>
+{% endblock %}

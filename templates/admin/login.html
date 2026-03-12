@@ -1,0 +1,72 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block title %}{% translate "Admin sign in" %} | {{ store_name }}{% endblock %}
+
+{% block bodyclass %}{{ block.super }} login sd-admin-login-body{% endblock %}
+
+{% block usertools %}{% endblock %}
+
+{% block nav-global %}{% endblock %}
+
+{% block nav-sidebar %}{% endblock %}
+
+{% block nav-breadcrumbs %}{% endblock %}
+
+{% block content_title %}{% endblock %}
+
+{% block content %}
+<section class="sd-admin-login-shell">
+    <div class="sd-admin-login-card">
+        <p class="sd-admin-login-kicker">{% translate "Secure Admin Portal" %}</p>
+        <h1>{{ store_name }} operations</h1>
+        <p class="sd-admin-login-copy">
+            {% translate "Sign in with your Django staff account to manage catalog inventory, verified orders, and payment operations." %}
+        </p>
+
+        {% if form.errors and not form.non_field_errors %}
+        <div class="sd-admin-alert">
+            {% blocktranslate count counter=form.errors.items|length %}Please correct the error below.{% plural %}Please correct the errors below.{% endblocktranslate %}
+        </div>
+        {% endif %}
+
+        {% if form.non_field_errors %}
+            {% for error in form.non_field_errors %}
+            <div class="sd-admin-alert">{{ error }}</div>
+            {% endfor %}
+        {% endif %}
+
+        {% if user.is_authenticated %}
+        <div class="sd-admin-alert">
+            {% blocktranslate trimmed %}
+                You are authenticated as {{ username }}, but this account cannot access the admin.
+            {% endblocktranslate %}
+        </div>
+        {% endif %}
+
+        <form action="{{ app_path }}" method="post" id="login-form" class="sd-admin-login-form">
+            {% csrf_token %}
+            <div class="sd-admin-field">
+                {{ form.username.errors }}
+                {{ form.username.label_tag }}
+                {{ form.username }}
+            </div>
+            <div class="sd-admin-field">
+                {{ form.password.errors }}
+                {{ form.password.label_tag }}
+                {{ form.password }}
+                <input type="hidden" name="next" value="{{ next }}">
+            </div>
+            {% url 'admin_password_reset' as password_reset_url %}
+            {% if password_reset_url %}
+            <div class="sd-admin-login-meta">
+                <a href="{{ password_reset_url }}">{% translate "Forgot your admin password?" %}</a>
+            </div>
+            {% endif %}
+            <div class="submit-row">
+                <input type="submit" value="{% translate 'Log in' %}">
+            </div>
+        </form>
+    </div>
+</section>
+{% endblock %}
