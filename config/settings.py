@@ -3,7 +3,6 @@ from decimal import Decimal
 from pathlib import Path
 
 import dj_database_url
-from django.core.exceptions import ImproperlyConfigured
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -102,11 +101,6 @@ TEMPLATES = [
 WSGI_APPLICATION = "api.wsgi.app"
 
 DATABASE_URL = os.environ.get("DATABASE_URL", "").strip()
-if IS_VERCEL and not DATABASE_URL:
-    raise ImproperlyConfigured(
-        "DATABASE_URL must be set in Vercel. Use a Supabase Postgres transaction pooler URL."
-    )
-
 DATABASE_DEFAULT = DATABASE_URL or f"sqlite:///{BASE_DIR / 'db.sqlite3'}"
 DATABASES = {
     "default": dj_database_url.config(
