@@ -1,5 +1,4 @@
 import mimetypes
-from pathlib import Path
 
 from django.conf import settings
 from django.contrib import messages
@@ -17,7 +16,7 @@ from orders.models import Order, OrderItem
 from .forms import ContactForm
 
 
-FRONTEND_BUILD_DIR = Path(settings.BASE_DIR) / "frontend_build"
+FRONTEND_BUILD_DIR = settings.FRONTEND_BUILD_DIR
 FRONTEND_INDEX_FILE = FRONTEND_BUILD_DIR / "index.html"
 
 

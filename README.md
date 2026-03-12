@@ -2,6 +2,12 @@
 
 Production-lean Django e-commerce MVP for **SIRDAVID MULTI-TRADE LTD**, built for `sirdavidshop.sirdavid.site`.
 
+## Project structure
+
+- `backend/` contains the Django project config and all backend apps
+- `frontend/` contains the Vite/React storefront source and its `dist/` build output
+- `templates/`, `static/`, `.well-known/`, and deployment entrypoints stay at the repository root
+
 ## Features
 
 - Product catalog with categories, featured items, search, filtering, stock tracking, and detailed product pages
@@ -22,6 +28,7 @@ Production-lean Django e-commerce MVP for **SIRDAVID MULTI-TRADE LTD**, built fo
 5. Create an admin account with `python manage.py createsuperuser`.
 6. Optional: seed demo products with `python manage.py seed_store`.
 7. Start the server with `python manage.py runserver`.
+8. Build the React storefront with `cd frontend && npm run build` when you need updated frontend assets.
 
 ## Critical payment rule
 

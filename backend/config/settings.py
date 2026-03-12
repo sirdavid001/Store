@@ -4,7 +4,8 @@ from pathlib import Path
 
 import dj_database_url
 
-BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR = Path(__file__).resolve().parents[2]
+BACKEND_DIR = BASE_DIR / "backend"
 
 
 def env_bool(name, default=False):
@@ -98,7 +99,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = "api.wsgi.app"
+WSGI_APPLICATION = "config.wsgi.app"
 
 DATABASE_URL = os.environ.get("DATABASE_URL", "").strip()
 DATABASE_DEFAULT = DATABASE_URL or f"sqlite:///{BASE_DIR / 'db.sqlite3'}"
@@ -164,6 +165,7 @@ STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
+FRONTEND_BUILD_DIR = BASE_DIR / "frontend" / "dist"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 

@@ -6,11 +6,16 @@ from pathlib import Path
 
 from django.core.wsgi import get_wsgi_application
 
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "api.settings")
-
 _django_app = None
 _startup_error = None
 _base_dir = Path(__file__).resolve().parent
+_backend_dir = (_base_dir / "backend").resolve()
+
+if str(_backend_dir) not in sys.path:
+    sys.path.insert(0, str(_backend_dir))
+
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")
+
 _static_dirs = [
     (_base_dir / "staticfiles").resolve(),
     (_base_dir / "static").resolve(),

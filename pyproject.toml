@@ -20,6 +20,3 @@ dependencies = [
   "urllib3==2.6.3",
   "whitenoise==6.12.0",
 ]
-
-[project.scripts]
-app = "api.wsgi:app"
