@@ -10,7 +10,7 @@ import {
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 
-import { LoadingInlineLabel } from "../components/AppLoading";
+import { LoadingInlineLabel, PageSpinner } from "../components/AppLoading";
 import { ProductCard } from "../components/ProductCard";
 import { useStore } from "../context/StoreContext";
 
@@ -32,12 +32,16 @@ function conditionClasses(condition) {
 export function ProductPage() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { products, addToCart, formatPrice } = useStore();
+  const { products, productsLoading, addToCart, formatPrice } = useStore();
   const [selectedImage, setSelectedImage] = useState("");
   const [activePanel, setActivePanel] = useState("specs");
   const [addingToCart, setAddingToCart] = useState(false);
 
   const product = products.find((item) => item.id === id);
+  if (productsLoading && !product) {
+    return <PageSpinner />;
+  }
+
   if (!product) {
     return (
       <div className="bg-[#f8f9fc] px-4 py-20 text-center sm:px-6">

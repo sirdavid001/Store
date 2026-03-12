@@ -160,8 +160,48 @@ function normalizeSessionStatus(payload) {
   };
 }
 
+function normalizeStorefrontProduct(rawProduct) {
+  const gallery = [
+    rawProduct.image_url ?? rawProduct.imageUrl ?? rawProduct.image ?? "",
+    ...(rawProduct.gallery ?? rawProduct.extra_image_urls ?? rawProduct.extraImageUrls ?? []),
+  ]
+    .map((value) => String(value || "").trim())
+    .filter(Boolean)
+    .filter((value, index, values) => values.indexOf(value) === index);
+
+  const specs = Array.isArray(rawProduct.specs)
+    ? rawProduct.specs
+        .map((entry) => {
+          if (!Array.isArray(entry) || entry.length < 2) {
+            return null;
+          }
+          return [String(entry[0] || ""), String(entry[1] || "")];
+        })
+        .filter(Boolean)
+    : [];
+
+  return {
+    id: String(rawProduct.slug ?? rawProduct.id ?? ""),
+    catalogProductId: rawProduct.catalog_product_id ?? rawProduct.catalogProductId ?? null,
+    name: rawProduct.name ?? "Untitled product",
+    brand: rawProduct.brand ?? "Unknown",
+    category: rawProduct.category ?? "phones",
+    condition: rawProduct.condition ?? "New",
+    priceUsd: Number(rawProduct.price_usd ?? rawProduct.priceUsd ?? rawProduct.price ?? 0),
+    stock: Number(rawProduct.stock_quantity ?? rawProduct.stockQuantity ?? rawProduct.stock ?? 0),
+    badge: rawProduct.badge ?? (rawProduct.featured ? "Featured" : ""),
+    shortDescription:
+      rawProduct.short_description ?? rawProduct.shortDescription ?? rawProduct.description ?? "",
+    description: rawProduct.description ?? rawProduct.short_description ?? "",
+    image: gallery[0] ?? "",
+    gallery,
+    specs,
+  };
+}
+
 export function StoreProvider({ children }) {
-  const [products, setProducts] = useState(() => readStorage(STORAGE_KEYS.products, defaultProducts));
+  const [products, setProducts] = useState(() => readStorage(STORAGE_KEYS.products, []));
+  const [productsLoading, setProductsLoading] = useState(true);
   const [cart, setCart] = useState(() => readStorage(STORAGE_KEYS.cart, []));
   const [orders, setOrders] = useState(() => readStorage(STORAGE_KEYS.orders, defaultOrders));
   const [shippingConfig, setShippingConfig] = useState(() =>
@@ -204,6 +244,55 @@ export function StoreProvider({ children }) {
     setSessionStatus(normalized);
     return normalized;
   }
+
+  async function refreshProducts() {
+    const endpoint = import.meta.env.VITE_STOREFRONT_PRODUCTS_ENDPOINT || "/shop/api/products/";
+    const response = await fetch(endpoint, {
+      credentials: "same-origin",
+      headers: {
+        Accept: "application/json",
+      },
+    });
+    if (!response.ok) {
+      throw new Error("product lookup failed");
+    }
+
+    const payload = await response.json();
+    const items = Array.isArray(payload) ? payload : payload.products ?? [];
+    const normalized = items.map(normalizeStorefrontProduct).filter((product) => product.id);
+    return normalized;
+  }
+
+  useEffect(() => {
+    let active = true;
+
+    async function loadProducts() {
+      try {
+        const nextProducts = await refreshProducts();
+        if (!active) {
+          return;
+        }
+
+        setProducts(nextProducts);
+      } catch {
+        if (!active) {
+          return;
+        }
+
+        setProducts(readStorage(STORAGE_KEYS.products, defaultProducts));
+      } finally {
+        if (active) {
+          setProductsLoading(false);
+        }
+      }
+    }
+
+    loadProducts();
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   useEffect(() => {
     window.localStorage.setItem(STORAGE_KEYS.products, JSON.stringify(products));
@@ -510,6 +599,7 @@ export function StoreProvider({ children }) {
 
   const value = {
     products,
+    productsLoading,
     cartLines,
     cartCount,
     subtotalUsd,

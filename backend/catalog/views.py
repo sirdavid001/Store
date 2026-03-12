@@ -1,11 +1,59 @@
 from decimal import Decimal, InvalidOperation
 
 from django.db.models import Q
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
+from django.views import View
 from django.views.generic import DetailView, ListView
 
 from .models import Category, Product
+
+
+def _image_url(request, image_field):
+    if not image_field:
+        return ""
+    return request.build_absolute_uri(image_field.url)
+
+
+def _serialize_storefront_product(request, product):
+    image_urls = []
+    for image_field in (product.image, product.secondary_image):
+        image_url = _image_url(request, image_field)
+        if image_url and image_url not in image_urls:
+            image_urls.append(image_url)
+
+    return {
+        "id": product.slug,
+        "catalog_product_id": product.pk,
+        "slug": product.slug,
+        "name": product.name,
+        "brand": product.brand,
+        "category": product.category.slug,
+        "category_name": product.category.name,
+        "condition": "New",
+        "price_usd": str(product.price),
+        "stock_quantity": product.stock_quantity,
+        "featured": product.featured,
+        "badge": "Featured" if product.featured else "",
+        "short_description": product.short_description,
+        "description": product.description,
+        "image_url": image_urls[0] if image_urls else "",
+        "gallery": image_urls,
+        "specs": [[spec.label, spec.value] for spec in product.specifications.all()],
+    }
+
+
+class StorefrontProductFeedView(View):
+    def get(self, request):
+        products = (
+            Product.objects.filter(is_active=True)
+            .select_related("category")
+            .prefetch_related("specifications")
+        )
+        return JsonResponse(
+            {"products": [_serialize_storefront_product(request, product) for product in products]}
+        )
 
 
 class ProductListView(ListView):

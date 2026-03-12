@@ -46,7 +46,8 @@ const categoryIcons = {
 };
 
 export function ShopPage() {
-  const { products, formatPrice, currentCurrency, loadingRates, currencyOptions } = useStore();
+  const { products, productsLoading, formatPrice, currentCurrency, loadingRates, currencyOptions } =
+    useStore();
   const { routeLoading } = useLoadingUi();
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -352,7 +353,7 @@ export function ShopPage() {
           </div>
 
           <div className="mt-8">
-            {loadingRates || routeLoading ? (
+            {loadingRates || routeLoading || productsLoading ? (
               <ProductGridSkeleton count={6} />
             ) : (
               <div className="grid gap-5 min-[360px]:grid-cols-2 xl:grid-cols-3">
