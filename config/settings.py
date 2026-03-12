@@ -19,6 +19,17 @@ def env_list(name, default=""):
     return [item.strip() for item in raw.split(",") if item.strip()]
 
 
+def directory_writable(path):
+    try:
+        path.mkdir(parents=True, exist_ok=True)
+        probe = path / ".write-test"
+        probe.write_text("ok")
+        probe.unlink()
+        return True
+    except OSError:
+        return False
+
+
 SECRET_KEY = os.environ.get(
     "DJANGO_SECRET_KEY",
     "sirdavid-gadgets-dev-secret-change-before-production-4e9c7b5a2d1f8h6k3m0q",
@@ -97,18 +108,21 @@ DATABASES = {
     )
 }
 
-if IS_VERCEL:
+CACHE_DIR = BASE_DIR / ".cache"
+USE_FILE_CACHE = not IS_VERCEL and directory_writable(CACHE_DIR)
+
+if USE_FILE_CACHE:
     CACHES = {
         "default": {
-            "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+            "BACKEND": "django.core.cache.backends.filebased.FileBasedCache",
+            "LOCATION": CACHE_DIR,
             "TIMEOUT": int(os.environ.get("DJANGO_CACHE_TIMEOUT", "3600")),
         }
     }
 else:
     CACHES = {
         "default": {
-            "BACKEND": "django.core.cache.backends.filebased.FileBasedCache",
-            "LOCATION": BASE_DIR / ".cache",
+            "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
             "TIMEOUT": int(os.environ.get("DJANGO_CACHE_TIMEOUT", "3600")),
         }
     }
@@ -240,10 +254,15 @@ LOGGING = {
     },
 }
 
-if not IS_VERCEL:
+LOG_DIR = BASE_DIR / "logs"
+USE_FILE_LOGGING = (
+    env_bool("DJANGO_LOG_TO_FILE", not IS_VERCEL) and directory_writable(LOG_DIR)
+)
+
+if USE_FILE_LOGGING:
     LOGGING["handlers"]["file"] = {
         "class": "logging.handlers.RotatingFileHandler",
-        "filename": BASE_DIR / "logs" / "sirdavid-gadgets.log",
+        "filename": LOG_DIR / "sirdavid-gadgets.log",
         "formatter": "standard",
         "maxBytes": 1024 * 1024 * 5,
         "backupCount": 3,
