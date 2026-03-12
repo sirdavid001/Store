@@ -176,6 +176,7 @@ export function StoreProvider({ children }) {
   const [exchangeRates, setExchangeRates] = useState(FALLBACK_RATES);
   const [loadingRates, setLoadingRates] = useState(true);
   const [lastRateSync, setLastRateSync] = useState(null);
+  const [checkoutPending, setCheckoutPending] = useState(false);
   const [sessionStatus, setSessionStatus] = useState({
     loading: true,
     isAuthenticated: false,
@@ -405,6 +406,8 @@ export function StoreProvider({ children }) {
       return;
     }
 
+    setCheckoutPending(true);
+
     try {
       const endpoint =
         import.meta.env.VITE_PAYSTACK_INIT_ENDPOINT || "/payments/storefront/initialize/";
@@ -454,6 +457,7 @@ export function StoreProvider({ children }) {
       window.location.assign(redirectUrl);
     } catch (error) {
       toast.error(error.message || "Could not initialize Paystack checkout.");
+      setCheckoutPending(false);
     }
   }
 
@@ -518,6 +522,7 @@ export function StoreProvider({ children }) {
     exchangeRates,
     loadingRates,
     lastRateSync,
+    checkoutPending,
     sessionStatus,
     adminLogin,
     adminLogout,

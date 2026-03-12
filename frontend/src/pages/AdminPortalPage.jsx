@@ -9,7 +9,7 @@ import {
   ChevronDown,
   ChevronUp,
   ImagePlus,
-  LoaderCircle,
+  Loader2,
   LogOut,
   Package,
   Pencil,
@@ -43,6 +43,7 @@ import {
   uploadAdminImage,
   verifyAdminSession,
 } from "../app/lib/api";
+import { LoadingInlineLabel } from "../components/AppLoading";
 
 const ORDER_TABS = [
   { value: "orders", label: "Orders", icon: Package },
@@ -188,6 +189,10 @@ function statusTone(status) {
     delivered: "bg-emerald-100 text-emerald-700 ring-emerald-200",
     cancelled: "bg-rose-100 text-rose-700 ring-rose-200",
   }[normalizeOrderStatus(status)];
+}
+
+function statusLabel(status) {
+  return ORDER_STATUS_OPTIONS.find((option) => option.value === normalizeOrderStatus(status))?.label || status;
 }
 
 function normalizeCategory(value) {
@@ -434,7 +439,7 @@ function PortalCard({ children, className = "" }) {
   return (
     <div
       className={clsx(
-        "rounded-[30px] border border-slate-200/70 bg-white/95 p-6 shadow-[0_22px_80px_rgba(15,23,42,0.12)] backdrop-blur",
+        "rounded-[26px] border border-slate-200/70 bg-white/95 p-4 shadow-[0_22px_80px_rgba(15,23,42,0.12)] backdrop-blur sm:rounded-[30px] sm:p-6",
         className,
       )}
     >
@@ -458,7 +463,7 @@ function TextInput(props) {
     <input
       {...props}
       className={clsx(
-        "w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-blue-400 focus:ring-4 focus:ring-blue-100",
+        "min-h-11 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-blue-400 focus:ring-4 focus:ring-blue-100",
         props.className,
       )}
     />
@@ -482,7 +487,7 @@ function SelectInput({ options, className = "", ...props }) {
     <select
       {...props}
       className={clsx(
-        "w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-950 outline-none transition focus:border-blue-400 focus:ring-4 focus:ring-blue-100",
+        "min-h-11 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-950 outline-none transition focus:border-blue-400 focus:ring-4 focus:ring-blue-100",
         className,
       )}
     >
@@ -513,6 +518,8 @@ export function AdminPortalPage() {
   const [debugging, setDebugging] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [savingProduct, setSavingProduct] = useState(false);
+  const [orderSavingId, setOrderSavingId] = useState("");
+  const [deleteSubmitting, setDeleteSubmitting] = useState(false);
   const [orders, setOrders] = useState([]);
   const [products, setProducts] = useState([]);
   const [shippingSettings, setShippingSettings] = useState(DEFAULT_SHIPPING_SETTINGS);
@@ -717,6 +724,7 @@ export function AdminPortalPage() {
   async function persistOrderStatus(orderId) {
     const nextStatus = orderStatusDrafts[orderId];
     const previous = orders;
+    setOrderSavingId(orderId);
 
     setOrders((current) =>
       current.map((order) => (order.id === orderId ? { ...order, status: nextStatus } : order)),
@@ -728,6 +736,8 @@ export function AdminPortalPage() {
     } catch (error) {
       setOrders(previous);
       toast.error(error.message || "Could not update order status.");
+    } finally {
+      setOrderSavingId("");
     }
   }
 
@@ -816,6 +826,7 @@ export function AdminPortalPage() {
     }
 
     const previous = products;
+    setDeleteSubmitting(true);
     setProducts((current) => current.filter((product) => product.id !== deleteTarget.id));
 
     try {
@@ -826,6 +837,7 @@ export function AdminPortalPage() {
       toast.error(error.message || "Could not delete product.");
     } finally {
       setDeleteTarget(null);
+      setDeleteSubmitting(false);
     }
   }
 
@@ -888,7 +900,7 @@ export function AdminPortalPage() {
         <div className="mx-auto flex min-h-[70vh] max-w-2xl items-center justify-center">
           <PortalCard className="w-full max-w-xl bg-white/10 p-10 text-center text-white shadow-[0_32px_120px_rgba(2,6,23,0.45)]">
             <div className="mx-auto inline-flex rounded-3xl bg-white/10 p-4 text-sky-300">
-              <LoaderCircle className="h-8 w-8 animate-spin" />
+              <Loader2 className="h-8 w-8 animate-spin" />
             </div>
             <p className="mt-6 text-xs font-semibold uppercase tracking-[0.32em] text-sky-300">
               Secure Admin Portal
@@ -905,52 +917,52 @@ export function AdminPortalPage() {
 
   if (!authState.authenticated) {
     return (
-      <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,rgba(74,123,255,0.24),transparent_24%),radial-gradient(circle_at_top_right,rgba(139,92,246,0.18),transparent_28%),linear-gradient(180deg,#07101f_0%,#040816_48%,#02040d_100%)] px-4 py-12 text-white md:px-6">
-        <div className="mx-auto flex min-h-[80vh] max-w-6xl flex-col justify-center gap-8 md:grid md:grid-cols-[1.05fr_480px]">
-          <div className="rounded-[36px] border border-white/10 bg-white/8 p-8 shadow-[0_32px_120px_rgba(2,6,23,0.4)] backdrop-blur md:p-12">
+      <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,rgba(74,123,255,0.24),transparent_24%),radial-gradient(circle_at_top_right,rgba(139,92,246,0.18),transparent_28%),linear-gradient(180deg,#07101f_0%,#040816_48%,#02040d_100%)] px-4 py-8 text-white md:px-6 md:py-12">
+        <div className="mx-auto flex min-h-[80vh] max-w-6xl flex-col justify-center gap-6 md:grid md:grid-cols-[1.05fr_480px] md:gap-8">
+          <div className="rounded-[30px] border border-white/10 bg-white/8 p-6 shadow-[0_32px_120px_rgba(2,6,23,0.4)] backdrop-blur md:p-12">
             <div className="inline-flex items-center gap-4">
-              <span className="inline-flex h-16 w-16 items-center justify-center rounded-[22px] bg-gradient-to-br from-blue-500 to-violet-500 shadow-[0_18px_40px_rgba(74,123,255,0.3)]">
+              <span className="inline-flex h-14 w-14 items-center justify-center rounded-[20px] bg-gradient-to-br from-blue-500 to-violet-500 shadow-[0_18px_40px_rgba(74,123,255,0.3)] md:h-16 md:w-16 md:rounded-[22px]">
                 <Shield className="h-7 w-7 text-white" />
               </span>
               <div>
                 <p className="font-['Sora'] text-2xl font-semibold">SirDavid</p>
-                <p className="text-xs font-semibold uppercase tracking-[0.32em] text-sky-300">
+                <p className="text-sm font-semibold uppercase tracking-[0.2em] text-sky-300 md:text-xs md:tracking-[0.32em]">
                   Admin Portal
                 </p>
               </div>
             </div>
-            <p className="mt-10 text-xs font-semibold uppercase tracking-[0.32em] text-sky-300">
+            <p className="mt-8 text-sm font-semibold uppercase tracking-[0.2em] text-sky-300 md:mt-10 md:text-xs md:tracking-[0.32em]">
               Secure internal operations
             </p>
-            <h1 className="mt-4 max-w-xl font-['Sora'] text-4xl font-semibold leading-[1.02] md:text-6xl">
+            <h1 className="mt-4 max-w-xl font-['Sora'] text-3xl font-semibold leading-[1.02] min-[390px]:text-4xl md:text-6xl">
               Orders, products, and shipping in one hidden control room.
             </h1>
-            <p className="mt-6 max-w-2xl text-base leading-8 text-slate-300">
+            <p className="mt-5 max-w-2xl text-sm leading-7 text-slate-300 md:mt-6 md:text-base md:leading-8">
               Authenticate with your operator email and password. This hidden route is designed for
               SirDavid Gadgets staff using token-based access backed by the external admin service.
             </p>
-            <div className="mt-8 flex flex-wrap gap-3 text-sm text-slate-200">
-              <span className="rounded-full border border-white/10 bg-white/6 px-4 py-2">
+            <div className="mt-8 grid gap-3 text-sm text-slate-200 min-[390px]:grid-cols-2 xl:flex xl:flex-wrap">
+              <span className="inline-flex min-h-11 items-center justify-center rounded-full border border-white/10 bg-white/6 px-4 py-2 xl:justify-start">
                 X-Admin-Token sessions
               </span>
-              <span className="rounded-full border border-white/10 bg-white/6 px-4 py-2">
+              <span className="inline-flex min-h-11 items-center justify-center rounded-full border border-white/10 bg-white/6 px-4 py-2 xl:justify-start">
                 Supabase edge function
               </span>
-              <span className="rounded-full border border-white/10 bg-white/6 px-4 py-2">
+              <span className="inline-flex min-h-11 items-center justify-center rounded-full border border-white/10 bg-white/6 px-4 py-2 xl:justify-start">
                 Paystack-aware order ops
               </span>
             </div>
           </div>
 
-          <PortalCard className="self-center p-8 md:p-9">
-            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-blue-600">
+          <PortalCard className="self-center p-6 sm:p-8 md:p-9">
+            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-blue-600 md:text-xs md:tracking-[0.28em]">
               Admin Sign In
             </p>
             <h2 className="mt-3 font-['Sora'] text-3xl font-semibold text-slate-950">
               Operator login
             </h2>
             <p className="mt-3 text-sm leading-7 text-slate-600">
-              Use the email address created during first-time setup.
+              Use the provisioned admin email and password.
             </p>
 
             {!isAdminApiConfigured() ? (
@@ -995,21 +1007,23 @@ export function AdminPortalPage() {
               <button
                 type="submit"
                 disabled={submittingAuth || !isAdminApiConfigured()}
-                className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-slate-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
+                className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full bg-slate-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
               >
-                {submittingAuth ? (
-                  <LoaderCircle className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Shield className="h-4 w-4" />
-                )}
-                {submittingAuth ? "Signing in..." : "Enter Admin Portal"}
+                {submittingAuth ? null : <Shield className="h-4 w-4" />}
+                <LoadingInlineLabel
+                  loading={submittingAuth}
+                  idleLabel="Enter Admin Portal"
+                  loadingLabel="Signing in..."
+                  minWidthClass="min-w-[180px]"
+                />
               </button>
             </form>
 
             <div className="mt-6 space-y-3">
               <LoginHintCard error={authError} />
               <div className="rounded-[24px] border border-slate-200 bg-slate-50 p-5 text-sm text-slate-600">
-                First deployment or fresh backend? Create the admin account locally, then return to this hidden route and sign in with the provisioned email and password.
+                Admin registration is local-only. Provision the account offline, then return here
+                and sign in with the issued credentials.
               </div>
             </div>
           </PortalCard>
@@ -1021,35 +1035,37 @@ export function AdminPortalPage() {
   return (
     <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,rgba(74,123,255,0.24),transparent_24%),radial-gradient(circle_at_top_right,rgba(139,92,246,0.18),transparent_28%),linear-gradient(180deg,#07101f_0%,#040816_48%,#02040d_100%)] pb-12 text-slate-950">
       <header className="sticky top-0 z-40 border-b border-white/10 bg-slate-950/80 text-white backdrop-blur-2xl">
-        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-4 py-4 md:px-6">
-          <div className="flex items-center gap-4">
-            <span className="inline-flex h-12 w-12 items-center justify-center rounded-[18px] bg-gradient-to-br from-blue-500 to-violet-500 shadow-[0_18px_40px_rgba(74,123,255,0.3)]">
+        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-4 py-3 md:px-6 md:py-4">
+          <div className="flex min-w-0 items-center gap-3 md:gap-4">
+            <span className="inline-flex h-11 w-11 items-center justify-center rounded-[16px] bg-gradient-to-br from-blue-500 to-violet-500 shadow-[0_18px_40px_rgba(74,123,255,0.3)] md:h-12 md:w-12 md:rounded-[18px]">
               <Shield className="h-5 w-5 text-white" />
             </span>
-            <div>
-              <p className="font-['Sora'] text-xl font-semibold">SirDavid</p>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.32em] text-sky-300">
+            <div className="min-w-0">
+              <p className="truncate font-['Sora'] text-lg font-semibold md:text-xl">SirDavid</p>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-sky-300 md:text-[10px] md:tracking-[0.32em]">
                 Admin Portal
               </p>
             </div>
           </div>
 
-          <Tabs.Root value={activeTab} onValueChange={setActiveTab} className="min-w-0 flex-1">
-            <Tabs.List className="mx-auto flex w-fit flex-wrap items-center gap-2 rounded-full border border-white/10 bg-white/8 p-2">
+          <Tabs.Root value={activeTab} onValueChange={setActiveTab} className="order-3 w-full md:order-none md:min-w-0 md:flex-1">
+            <div className="-mx-4 overflow-x-auto px-4 no-scrollbar md:mx-0 md:px-0">
+              <Tabs.List className="mx-auto flex w-max min-w-full items-center gap-2 rounded-full border border-white/10 bg-white/8 p-2 md:w-fit md:min-w-0">
               {ORDER_TABS.map((tab) => {
                 const Icon = tab.icon;
                 return (
                   <Tabs.Trigger
                     key={tab.value}
                     value={tab.value}
-                    className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold text-slate-300 transition hover:text-white data-[state=active]:bg-white data-[state=active]:text-slate-950"
+                    className="inline-flex min-h-11 shrink-0 items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold text-slate-300 transition hover:text-white data-[state=active]:bg-white data-[state=active]:text-slate-950"
                   >
                     <Icon className="h-4 w-4" />
-                    <span className="hidden sm:inline">{tab.label}</span>
+                    <span>{tab.label}</span>
                   </Tabs.Trigger>
                 );
               })}
-            </Tabs.List>
+              </Tabs.List>
+            </div>
           </Tabs.Root>
 
           <div className="flex items-center gap-3">
@@ -1057,15 +1073,15 @@ export function AdminPortalPage() {
               type="button"
               onClick={runDebugCheck}
               disabled={debugging}
-              className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/6 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-white/10 disabled:opacity-60"
+              className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/6 text-sm font-semibold text-white transition hover:bg-white/10 disabled:opacity-60 md:h-auto md:w-auto md:gap-2 md:px-4 md:py-2.5"
             >
-              {debugging ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <Bug className="h-4 w-4" />}
+              {debugging ? <Loader2 className="h-4 w-4 animate-spin" /> : <Bug className="h-4 w-4" />}
               <span className="hidden sm:inline">Debug</span>
             </button>
             <button
               type="button"
               onClick={logout}
-              className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/6 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-white/10"
+              className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/6 text-sm font-semibold text-white transition hover:bg-white/10 md:h-auto md:w-auto md:gap-2 md:px-4 md:py-2.5"
             >
               <LogOut className="h-4 w-4" />
               <span className="hidden sm:inline">Logout</span>
@@ -1074,27 +1090,27 @@ export function AdminPortalPage() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-7xl px-4 py-8 md:px-6">
-        <section className="mb-8 grid gap-5 lg:grid-cols-[1.2fr_repeat(3,0.8fr)]">
+      <main className="mx-auto max-w-7xl px-4 py-6 md:px-6 md:py-8">
+        <section className="mb-8 grid gap-4 lg:grid-cols-[1.2fr_repeat(3,0.8fr)] lg:gap-5">
           <PortalCard className="bg-white text-slate-950">
-            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-blue-600">
+            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-blue-600 md:text-xs md:tracking-[0.3em]">
               Authenticated operator
             </p>
-            <h1 className="mt-3 font-['Sora'] text-3xl font-semibold md:text-4xl">
+            <h1 className="mt-3 font-['Sora'] text-2xl font-semibold md:text-4xl">
               Welcome back, {authState.admin?.name || "Admin"}.
             </h1>
             <p className="mt-4 max-w-2xl text-sm leading-7 text-slate-600">
               Hidden route access is active. Manage verified orders, inventory, shipping logic,
               and the NGN/USD exchange baseline from one control surface.
             </p>
-            <div className="mt-6 flex flex-wrap gap-3 text-sm text-slate-500">
-              <span className="rounded-full border border-slate-200 bg-slate-50 px-4 py-2">
+            <div className="mt-6 grid gap-3 text-sm text-slate-500 min-[390px]:grid-cols-2 xl:flex xl:flex-wrap">
+              <span className="inline-flex min-h-11 items-center justify-center rounded-full border border-slate-200 bg-slate-50 px-4 py-2 xl:justify-start">
                 {authState.admin?.email}
               </span>
-              <span className="rounded-full border border-slate-200 bg-slate-50 px-4 py-2 capitalize">
+              <span className="inline-flex min-h-11 items-center justify-center rounded-full border border-slate-200 bg-slate-50 px-4 py-2 capitalize xl:justify-start">
                 {authState.admin?.role || "operator"}
               </span>
-              <span className="rounded-full border border-slate-200 bg-slate-50 px-4 py-2">
+              <span className="inline-flex min-h-11 items-center justify-center rounded-full border border-slate-200 bg-slate-50 px-4 py-2 xl:justify-start">
                 Token session active
               </span>
             </div>
@@ -1121,7 +1137,7 @@ export function AdminPortalPage() {
 
         {dashboardLoading ? (
           <PortalCard className="flex items-center justify-center gap-3 bg-white py-20 text-slate-600">
-            <LoaderCircle className="h-5 w-5 animate-spin text-blue-600" />
+            <Loader2 className="h-5 w-5 animate-spin text-blue-600" />
             Loading live admin data...
           </PortalCard>
         ) : null}
@@ -1131,7 +1147,7 @@ export function AdminPortalPage() {
             <PortalCard className="bg-white">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.28em] text-blue-600">
+                  <p className="text-sm font-semibold uppercase tracking-[0.2em] text-blue-600 md:text-xs md:tracking-[0.28em]">
                     Orders
                   </p>
                   <h2 className="mt-2 font-['Sora'] text-2xl font-semibold text-slate-950">
@@ -1142,14 +1158,15 @@ export function AdminPortalPage() {
                   type="button"
                   onClick={() => loadOrders()}
                   disabled={ordersLoading}
-                  className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-900 transition hover:border-blue-200 hover:bg-blue-50 disabled:opacity-60"
+                  className="inline-flex min-h-11 items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-900 transition hover:border-blue-200 hover:bg-blue-50 disabled:opacity-60"
                 >
-                  {ordersLoading ? (
-                    <LoaderCircle className="h-4 w-4 animate-spin text-blue-600" />
-                  ) : (
-                    <BadgeDollarSign className="h-4 w-4 text-blue-600" />
-                  )}
-                  Refresh orders
+                  {ordersLoading ? null : <BadgeDollarSign className="h-4 w-4 text-blue-600" />}
+                  <LoadingInlineLabel
+                    loading={ordersLoading}
+                    idleLabel="Refresh orders"
+                    loadingLabel="Refreshing..."
+                    minWidthClass="min-w-[144px]"
+                  />
                 </button>
               </div>
 
@@ -1165,8 +1182,129 @@ export function AdminPortalPage() {
                   </p>
                 </div>
               ) : (
-                <div className="mt-6 overflow-hidden rounded-[28px] border border-slate-200">
-                  <div className="overflow-x-auto">
+                <>
+                  <div className="mt-6 space-y-4 md:hidden">
+                    {orders.map((order) => {
+                      const expanded = expandedOrderId === order.id;
+                      return (
+                        <article
+                          key={order.id}
+                          className="rounded-[26px] border border-slate-200 bg-slate-50 p-4 shadow-sm"
+                        >
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setExpandedOrderId((current) => (current === order.id ? "" : order.id))
+                            }
+                            className="flex w-full items-start justify-between gap-3 text-left"
+                          >
+                            <div className="space-y-1">
+                              <p className="text-sm font-semibold text-slate-950">{order.reference}</p>
+                              <p className="text-sm text-slate-500">{order.customerName}</p>
+                              <p className="text-sm text-slate-500">{order.customerEmail}</p>
+                            </div>
+                            <div className="flex flex-col items-end gap-2">
+                              <span
+                                className={clsx(
+                                  "inline-flex rounded-full px-3 py-1 text-sm font-semibold ring-1 ring-inset",
+                                  statusTone(order.status),
+                                )}
+                              >
+                                {statusLabel(order.status)}
+                              </span>
+                              <span className="text-sm font-semibold text-slate-900">
+                                {money(order.totalNgn, "NGN")}
+                              </span>
+                            </div>
+                          </button>
+
+                          <div className="mt-4 grid gap-3 rounded-[22px] bg-white p-4">
+                            <div>
+                              <p className="text-sm font-semibold text-slate-500">Items</p>
+                              <p className="mt-1 text-sm leading-6 text-slate-700">{order.itemsSummary}</p>
+                            </div>
+                            <div className="flex items-center justify-between gap-4 text-sm">
+                              <span className="text-slate-500">Date</span>
+                              <span className="font-medium text-slate-900">{formatDate(order.createdAt)}</span>
+                            </div>
+                            <div className="grid gap-3">
+                              <SelectInput
+                                value={orderStatusDrafts[order.id] || order.status}
+                                onChange={(event) =>
+                                  setOrderStatusDrafts((current) => ({
+                                    ...current,
+                                    [order.id]: event.target.value,
+                                  }))
+                                }
+                                options={ORDER_STATUS_OPTIONS}
+                              />
+                              <button
+                                type="button"
+                                onClick={() => persistOrderStatus(order.id)}
+                                disabled={orderSavingId === order.id}
+                                className="inline-flex min-h-11 items-center justify-center rounded-full bg-slate-950 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:opacity-60"
+                              >
+                                <LoadingInlineLabel
+                                  loading={orderSavingId === order.id}
+                                  idleLabel="Update status"
+                                  loadingLabel="Saving..."
+                                  minWidthClass="min-w-[120px]"
+                                />
+                              </button>
+                            </div>
+                          </div>
+
+                          {expanded ? (
+                            <div className="mt-4 grid gap-4">
+                              <div className="rounded-[22px] border border-slate-200 bg-white p-4">
+                                <p className="text-sm font-semibold text-blue-600">Item breakdown</p>
+                                <div className="mt-3 space-y-3">
+                                  {order.items.map((item) => (
+                                    <div
+                                      key={item.id}
+                                      className="rounded-[18px] border border-slate-100 bg-slate-50 px-4 py-3"
+                                    >
+                                      <p className="font-medium text-slate-900">{item.name}</p>
+                                      <p className="mt-1 text-sm text-slate-500">
+                                        Qty {item.quantity} · {money(item.unitPriceNgn, "NGN")} each
+                                      </p>
+                                      <p className="mt-2 text-sm font-semibold text-slate-900">
+                                        {money(item.lineTotalNgn, "NGN")}
+                                      </p>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                              <div className="rounded-[22px] border border-slate-200 bg-white p-4">
+                                <p className="text-sm font-semibold text-blue-600">Shipping address</p>
+                                <p className="mt-3 text-sm leading-7 text-slate-600">
+                                  {order.shippingAddress}
+                                </p>
+                              </div>
+                              <div className="rounded-[22px] border border-slate-200 bg-white p-4">
+                                <p className="text-sm font-semibold text-blue-600">Payment details</p>
+                                <dl className="mt-3 space-y-3 text-sm text-slate-600">
+                                  <div className="flex items-center justify-between gap-4">
+                                    <dt>Method</dt>
+                                    <dd className="font-semibold text-slate-900">{order.paymentMethod}</dd>
+                                  </div>
+                                  <div className="flex items-center justify-between gap-4">
+                                    <dt>Paystack ref</dt>
+                                    <dd className="truncate text-right font-semibold text-slate-900">
+                                      {order.paystackReference}
+                                    </dd>
+                                  </div>
+                                </dl>
+                              </div>
+                            </div>
+                          ) : null}
+                        </article>
+                      );
+                    })}
+                  </div>
+
+                  <div className="mt-6 hidden overflow-hidden rounded-[28px] border border-slate-200 md:block">
+                    <div className="overflow-x-auto">
                     <table className="min-w-full text-sm">
                       <thead className="bg-slate-50 text-left text-xs uppercase tracking-[0.24em] text-slate-500">
                         <tr>
@@ -1219,8 +1357,7 @@ export function AdminPortalPage() {
                                       statusTone(order.status),
                                     )}
                                   >
-                                    {ORDER_STATUS_OPTIONS.find((option) => option.value === order.status)
-                                      ?.label || order.status}
+                                    {statusLabel(order.status)}
                                   </span>
                                 </td>
                                 <td className="px-4 py-4 text-slate-500">{formatDate(order.createdAt)}</td>
@@ -1243,9 +1380,15 @@ export function AdminPortalPage() {
                                     <button
                                       type="button"
                                       onClick={() => persistOrderStatus(order.id)}
-                                      className="rounded-full bg-slate-950 px-4 py-2 text-xs font-semibold uppercase tracking-[0.24em] text-white transition hover:bg-slate-800"
+                                      disabled={orderSavingId === order.id}
+                                      className="rounded-full bg-slate-950 px-4 py-2 text-xs font-semibold uppercase tracking-[0.24em] text-white transition hover:bg-slate-800 disabled:opacity-60"
                                     >
-                                      Update
+                                      <LoadingInlineLabel
+                                        loading={orderSavingId === order.id}
+                                        idleLabel="Update"
+                                        loadingLabel="Saving..."
+                                        minWidthClass="min-w-[84px]"
+                                      />
                                     </button>
                                   </div>
                                 </td>
@@ -1314,7 +1457,8 @@ export function AdminPortalPage() {
                       </tbody>
                     </table>
                   </div>
-                </div>
+                  </div>
+                </>
               )}
             </PortalCard>
           </Tabs.Content>
@@ -1323,26 +1467,31 @@ export function AdminPortalPage() {
             <PortalCard className="bg-white">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.28em] text-blue-600">
+                  <p className="text-sm font-semibold uppercase tracking-[0.2em] text-blue-600 md:text-xs md:tracking-[0.28em]">
                     Products
                   </p>
                   <h2 className="mt-2 font-['Sora'] text-2xl font-semibold text-slate-950">
                     Catalog manager
                   </h2>
                 </div>
-                <div className="flex gap-3">
+                <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
                   <button
                     type="button"
                     onClick={() => loadProducts()}
                     disabled={productsLoading}
-                    className="rounded-full border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-900 transition hover:border-blue-200 hover:bg-blue-50 disabled:opacity-60"
+                    className="inline-flex min-h-11 items-center justify-center rounded-full border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-900 transition hover:border-blue-200 hover:bg-blue-50 disabled:opacity-60"
                   >
-                    {productsLoading ? "Refreshing..." : "Refresh"}
+                    <LoadingInlineLabel
+                      loading={productsLoading}
+                      idleLabel="Refresh"
+                      loadingLabel="Refreshing..."
+                      minWidthClass="min-w-[128px]"
+                    />
                   </button>
                   <button
                     type="button"
                     onClick={openCreateProduct}
-                    className="inline-flex items-center gap-2 rounded-full bg-slate-950 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800"
+                    className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-slate-950 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800"
                   >
                     <Plus className="h-4 w-4" />
                     Add Product
@@ -1400,14 +1549,14 @@ export function AdminPortalPage() {
                             <button
                               type="button"
                               onClick={() => openEditProduct(product)}
-                              className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"
+                              className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"
                             >
                               <Pencil className="h-4 w-4" />
                             </button>
                             <button
                               type="button"
                               onClick={() => setDeleteTarget(product)}
-                              className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 transition hover:border-rose-200 hover:bg-rose-50 hover:text-rose-700"
+                              className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 transition hover:border-rose-200 hover:bg-rose-50 hover:text-rose-700"
                             >
                               <Trash2 className="h-4 w-4" />
                             </button>
@@ -1451,7 +1600,7 @@ export function AdminPortalPage() {
           <Tabs.Content value="shipping" className="space-y-5">
             <div className="grid gap-5 xl:grid-cols-[0.95fr_1.05fr]">
               <PortalCard className="bg-white">
-                <p className="text-xs font-semibold uppercase tracking-[0.28em] text-blue-600">
+                <p className="text-sm font-semibold uppercase tracking-[0.2em] text-blue-600 md:text-xs md:tracking-[0.28em]">
                   Current settings
                 </p>
                 <h2 className="mt-2 font-['Sora'] text-2xl font-semibold text-slate-950">
@@ -1487,7 +1636,7 @@ export function AdminPortalPage() {
               </PortalCard>
 
               <PortalCard className="bg-white">
-                <p className="text-xs font-semibold uppercase tracking-[0.28em] text-blue-600">
+                <p className="text-sm font-semibold uppercase tracking-[0.2em] text-blue-600 md:text-xs md:tracking-[0.28em]">
                   Shipping editor
                 </p>
                 <h2 className="mt-2 font-['Sora'] text-2xl font-semibold text-slate-950">
@@ -1503,7 +1652,7 @@ export function AdminPortalPage() {
                           setShippingDraft((current) => ({ ...current, mode: option.value }))
                         }
                         className={clsx(
-                          "rounded-[22px] border px-4 py-4 text-left transition",
+                          "min-h-11 rounded-[22px] border px-4 py-4 text-left transition",
                           shippingDraft.mode === option.value
                             ? "border-blue-200 bg-blue-50"
                             : "border-slate-200 bg-white hover:border-slate-300",
@@ -1584,14 +1733,15 @@ export function AdminPortalPage() {
                   <button
                     type="submit"
                     disabled={shippingSaving}
-                    className="inline-flex items-center gap-2 rounded-full bg-slate-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:opacity-60"
+                    className="inline-flex min-h-11 items-center gap-2 rounded-full bg-slate-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:opacity-60"
                   >
-                    {shippingSaving ? (
-                      <LoaderCircle className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <Truck className="h-4 w-4" />
-                    )}
-                    Save Settings
+                    {shippingSaving ? null : <Truck className="h-4 w-4" />}
+                    <LoadingInlineLabel
+                      loading={shippingSaving}
+                      idleLabel="Save Settings"
+                      loadingLabel="Saving..."
+                      minWidthClass="min-w-[132px]"
+                    />
                   </button>
                 </form>
 
@@ -1616,14 +1766,15 @@ export function AdminPortalPage() {
                     <button
                       type="submit"
                       disabled={exchangeSaving}
-                      className="inline-flex items-center justify-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-semibold text-slate-950 shadow-sm transition hover:bg-blue-50 disabled:opacity-60"
+                      className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-semibold text-slate-950 shadow-sm transition hover:bg-blue-50 disabled:opacity-60"
                     >
-                      {exchangeSaving ? (
-                        <LoaderCircle className="h-4 w-4 animate-spin" />
-                      ) : (
-                        <BadgeDollarSign className="h-4 w-4 text-blue-600" />
-                      )}
-                      Update Rate
+                      {exchangeSaving ? null : <BadgeDollarSign className="h-4 w-4 text-blue-600" />}
+                      <LoadingInlineLabel
+                        loading={exchangeSaving}
+                        idleLabel="Update Rate"
+                        loadingLabel="Saving..."
+                        minWidthClass="min-w-[126px]"
+                      />
                     </button>
                   </form>
                 </div>
@@ -1636,13 +1787,13 @@ export function AdminPortalPage() {
       <Dialog.Root open={productDialogOpen} onOpenChange={setProductDialogOpen}>
         <Dialog.Portal>
           <Dialog.Overlay className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm" />
-          <Dialog.Content className="fixed right-0 top-0 z-50 h-full w-full max-w-3xl overflow-y-auto border-l border-white/10 bg-[linear-gradient(180deg,#f8fbff_0%,#eef3ff_100%)] p-6 shadow-2xl md:p-8">
+          <Dialog.Content className="fixed inset-0 z-50 h-full w-full overflow-y-auto bg-[linear-gradient(180deg,#f8fbff_0%,#eef3ff_100%)] p-4 shadow-2xl sm:right-0 sm:left-auto sm:top-0 sm:max-w-3xl sm:border-l sm:border-white/10 sm:p-6 md:p-8">
             <div className="flex items-start justify-between gap-4">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.28em] text-blue-600">
+                <p className="text-sm font-semibold uppercase tracking-[0.2em] text-blue-600 md:text-xs md:tracking-[0.28em]">
                   {productForm.id ? "Edit product" : "Add product"}
                 </p>
-                <Dialog.Title className="mt-2 font-['Sora'] text-3xl font-semibold text-slate-950">
+                <Dialog.Title className="mt-2 font-['Sora'] text-2xl font-semibold text-slate-950 md:text-3xl">
                   {productForm.id ? "Update catalog entry" : "Create new catalog entry"}
                 </Dialog.Title>
               </div>
@@ -1725,13 +1876,14 @@ export function AdminPortalPage() {
                       Upload a file to the admin backend or paste a hosted URL.
                     </p>
                   </div>
-                  <label className="inline-flex cursor-pointer items-center gap-2 rounded-full bg-slate-950 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800">
-                    {uploadingImage ? (
-                      <LoaderCircle className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <ImagePlus className="h-4 w-4" />
-                    )}
-                    Upload image
+                  <label className="inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-full bg-slate-950 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800">
+                    {uploadingImage ? null : <ImagePlus className="h-4 w-4" />}
+                    <LoadingInlineLabel
+                      loading={uploadingImage}
+                      idleLabel="Upload image"
+                      loadingLabel="Uploading..."
+                      minWidthClass="min-w-[126px]"
+                    />
                     <input type="file" accept="image/*" className="hidden" onChange={handlePrimaryImageUpload} />
                   </label>
                 </div>
@@ -1787,7 +1939,7 @@ export function AdminPortalPage() {
                           extraImageUrls: [...current.extraImageUrls, ""],
                         }))
                       }
-                      className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-900 transition hover:border-blue-200 hover:bg-blue-50"
+                      className="inline-flex min-h-11 items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-900 transition hover:border-blue-200 hover:bg-blue-50"
                     >
                       <Plus className="h-4 w-4" />
                       Add field
@@ -1839,21 +1991,22 @@ export function AdminPortalPage() {
                 </p>
               </div>
 
-              <div className="flex flex-wrap justify-end gap-3">
-                <Dialog.Close className="rounded-full border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-900 transition hover:bg-slate-50">
+              <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+                <Dialog.Close className="inline-flex min-h-11 items-center justify-center rounded-full border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-900 transition hover:bg-slate-50">
                   Cancel
                 </Dialog.Close>
                 <button
                   type="submit"
                   disabled={savingProduct}
-                  className="inline-flex items-center gap-2 rounded-full bg-slate-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:opacity-60"
+                  className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-slate-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:opacity-60"
                 >
-                  {savingProduct ? (
-                    <LoaderCircle className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <ShoppingBag className="h-4 w-4" />
-                  )}
-                  {productForm.id ? "Save changes" : "Create product"}
+                  {savingProduct ? null : <ShoppingBag className="h-4 w-4" />}
+                  <LoadingInlineLabel
+                    loading={savingProduct}
+                    idleLabel={productForm.id ? "Save changes" : "Create product"}
+                    loadingLabel="Saving..."
+                    minWidthClass="min-w-[140px]"
+                  />
                 </button>
               </div>
             </form>
@@ -1864,7 +2017,7 @@ export function AdminPortalPage() {
       <Dialog.Root open={Boolean(deleteTarget)} onOpenChange={(open) => (!open ? setDeleteTarget(null) : null)}>
         <Dialog.Portal>
           <Dialog.Overlay className="fixed inset-0 z-50 bg-slate-950/65 backdrop-blur-sm" />
-          <Dialog.Content className="fixed left-1/2 top-1/2 z-50 w-[calc(100%-2rem)] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-[28px] bg-white p-6 shadow-2xl">
+          <Dialog.Content className="fixed inset-x-0 bottom-0 z-50 rounded-t-[28px] bg-white p-6 shadow-2xl sm:left-1/2 sm:top-1/2 sm:w-[calc(100%-2rem)] sm:max-w-md sm:-translate-x-1/2 sm:-translate-y-1/2 sm:rounded-[28px]">
             <Dialog.Title className="font-['Sora'] text-2xl font-semibold text-slate-950">
               Delete product?
             </Dialog.Title>
@@ -1872,17 +2025,23 @@ export function AdminPortalPage() {
               {deleteTarget?.name} will be removed from the admin product list. This action calls
               the live delete endpoint.
             </p>
-            <div className="mt-6 flex justify-end gap-3">
-              <Dialog.Close className="rounded-full border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-900 transition hover:bg-slate-50">
+            <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+              <Dialog.Close className="inline-flex min-h-11 items-center justify-center rounded-full border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-900 transition hover:bg-slate-50">
                 Cancel
               </Dialog.Close>
               <button
                 type="button"
                 onClick={confirmDeleteProduct}
-                className="inline-flex items-center gap-2 rounded-full bg-rose-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-rose-500"
+                disabled={deleteSubmitting}
+                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-rose-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-rose-500 disabled:opacity-70"
               >
-                <Trash2 className="h-4 w-4" />
-                Delete
+                {deleteSubmitting ? null : <Trash2 className="h-4 w-4" />}
+                <LoadingInlineLabel
+                  loading={deleteSubmitting}
+                  idleLabel="Delete"
+                  loadingLabel="Deleting..."
+                  minWidthClass="min-w-[96px]"
+                />
               </button>
             </div>
           </Dialog.Content>

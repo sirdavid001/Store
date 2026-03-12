@@ -2,15 +2,27 @@ import { PackageSearch, ShieldCheck, Truck } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
+import { TrackOrderSkeleton } from "../components/AppLoading";
 import { useStore } from "../context/StoreContext";
+import { useLoadingUi } from "../context/LoadingUiContext";
 
 export function TrackOrderPage() {
   const { orders, formatPrice } = useStore();
+  const { reducedMotion, routeLoading } = useLoadingUi();
   const [query, setQuery] = useState("");
   const [activeOrder, setActiveOrder] = useState(null);
+  const [lookupLoading, setLookupLoading] = useState(false);
 
-  function handleLookup(event) {
+  async function handleLookup(event) {
     event.preventDefault();
+    setLookupLoading(true);
+
+    if (!reducedMotion) {
+      await new Promise((resolve) => {
+        window.setTimeout(resolve, 420);
+      });
+    }
+
     const term = query.trim().toLowerCase();
     const match = orders.find(
       (order) =>
@@ -21,40 +33,46 @@ export function TrackOrderPage() {
 
     if (!match) {
       setActiveOrder(null);
+      setLookupLoading(false);
       toast.error("No order matched that reference.");
       return;
     }
 
     setActiveOrder(match);
+    setLookupLoading(false);
   }
 
   return (
-    <div className="mx-auto grid max-w-7xl gap-8 px-4 py-16 md:px-6 lg:grid-cols-[0.9fr_1.1fr]">
+    <div className="mx-auto grid max-w-7xl gap-8 px-4 py-12 md:px-6 md:py-16 lg:grid-cols-[0.9fr_1.1fr]">
       <section className="space-y-6">
-        <p className="text-xs font-semibold uppercase tracking-[0.35em] text-sky-300">Track Order</p>
-        <h1 className="text-5xl font-semibold text-white">Follow a verified delivery in real time.</h1>
-        <p className="max-w-xl text-base leading-8 text-slate-300">
+        <p className="text-sm font-semibold uppercase tracking-[0.22em] text-sky-300 md:text-xs md:tracking-[0.35em]">
+          Track Order
+        </p>
+        <h1 className="text-3xl font-semibold text-white min-[390px]:text-4xl md:text-5xl">
+          Follow a verified delivery in real time.
+        </h1>
+        <p className="max-w-xl text-sm leading-7 text-slate-300 md:text-base md:leading-8">
           Enter your order number, tracking number, or checkout email. Only orders verified by Paystack webhook appear as confirmed shipments.
         </p>
 
-        <form onSubmit={handleLookup} className="section-frame rounded-[32px] p-6">
+        <form onSubmit={handleLookup} className="section-frame rounded-[28px] p-5 sm:rounded-[32px] sm:p-6">
           <label className="text-sm font-semibold text-white">Reference</label>
           <input
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             placeholder="SDG-2026-1042 or TRK-AX91-221"
-            className="mt-3 w-full rounded-[24px] border border-white/10 bg-white/5 px-4 py-4 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-sky-400"
+            className="mt-3 h-12 w-full rounded-[24px] border border-white/10 bg-white/5 px-4 py-4 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-sky-400"
           />
           <button
             type="submit"
-            className="mt-4 inline-flex items-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-blue-50"
+            className="mt-4 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-blue-50 sm:w-auto"
           >
             <PackageSearch className="h-4 w-4" />
             Track Order
           </button>
         </form>
 
-        <div className="section-frame rounded-[32px] p-6">
+        <div className="section-frame rounded-[28px] p-5 sm:rounded-[32px] sm:p-6">
           <div className="flex items-center gap-3 text-sm text-emerald-200">
             <ShieldCheck className="h-5 w-5" />
             Orders remain pending until payment verification succeeds.
@@ -63,17 +81,21 @@ export function TrackOrderPage() {
       </section>
 
       <section className="space-y-6">
-        {activeOrder ? (
+        {lookupLoading || routeLoading ? (
+          <TrackOrderSkeleton />
+        ) : activeOrder ? (
           <>
             <div className="section-frame rounded-[32px] p-6">
-              <div className="flex flex-wrap items-center justify-between gap-4">
+              <div className="flex flex-col gap-4 min-[430px]:flex-row min-[430px]:items-center min-[430px]:justify-between">
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.3em] text-sky-300">
+                  <p className="text-sm font-semibold uppercase tracking-[0.18em] text-sky-300 md:text-xs md:tracking-[0.3em]">
                     {activeOrder.orderNumber}
                   </p>
-                  <h2 className="mt-2 text-3xl font-semibold text-white">{activeOrder.status}</h2>
+                  <h2 className="mt-2 text-2xl font-semibold capitalize text-white md:text-3xl">
+                    {activeOrder.status}
+                  </h2>
                 </div>
-                <span className="rounded-full bg-white/8 px-4 py-2 text-sm font-semibold text-white">
+                <span className="inline-flex min-h-11 items-center self-start rounded-full bg-white/8 px-4 py-2 text-sm font-semibold text-white">
                   {activeOrder.trackingNumber}
                 </span>
               </div>
@@ -94,15 +116,15 @@ export function TrackOrderPage() {
               </div>
             </div>
 
-            <div className="section-frame rounded-[32px] p-6">
+            <div className="section-frame rounded-[28px] p-5 sm:rounded-[32px] sm:p-6">
               <h3 className="text-2xl font-semibold text-white">Order progress</h3>
               <div className="mt-6 space-y-4">
                 {activeOrder.timeline.map((entry) => (
                   <div
                     key={`${entry.title}-${entry.time}`}
-                    className="flex gap-4 rounded-[24px] border border-white/10 bg-white/5 p-4"
+                    className="flex flex-col gap-4 rounded-[24px] border border-white/10 bg-white/5 p-4 sm:flex-row"
                   >
-                    <div className="mt-1 rounded-full bg-sky-400/10 p-2 text-sky-300">
+                    <div className="mt-1 inline-flex self-start rounded-full bg-sky-400/10 p-2 text-sky-300">
                       <Truck className="h-4 w-4" />
                     </div>
                     <div>
