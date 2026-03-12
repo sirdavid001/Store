@@ -1,0 +1,456 @@
+import {
+  createContext,
+  startTransition,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
+import { toast } from "sonner";
+
+import {
+  currencyOptions,
+  defaultOrders,
+  defaultPaymentLogs,
+  defaultProducts,
+  defaultShippingConfig,
+} from "../data/storeData";
+
+const FALLBACK_RATES = {
+  USD: 1,
+  NGN: 1545,
+  GHS: 15.4,
+  KES: 129.8,
+  ZAR: 18.9,
+  XOF: 610.5,
+};
+
+const COUNTRY_TO_CURRENCY = {
+  NG: "NGN",
+  US: "USD",
+  GH: "GHS",
+  KE: "KES",
+  ZA: "ZAR",
+  BJ: "XOF",
+  BF: "XOF",
+  CI: "XOF",
+  ML: "XOF",
+  NE: "XOF",
+  SN: "XOF",
+  TG: "XOF",
+};
+
+const STORAGE_KEYS = {
+  cart: "sirdavid-cart",
+  products: "sirdavid-products",
+  orders: "sirdavid-orders",
+  shipping: "sirdavid-shipping",
+  logs: "sirdavid-payments",
+  currency: "sirdavid-currency",
+  admin: "sirdavid-admin-session",
+};
+
+const StoreContext = createContext(null);
+
+function readStorage(key, fallback) {
+  if (typeof window === "undefined") {
+    return fallback;
+  }
+
+  try {
+    const value = window.localStorage.getItem(key);
+    return value ? JSON.parse(value) : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+function inferCountryFromLocale() {
+  try {
+    const locale = new Intl.Locale(navigator.language);
+    return locale.region ?? "NG";
+  } catch {
+    const parts = navigator.language.split("-");
+    return parts[1] ?? "NG";
+  }
+}
+
+async function detectCountry() {
+  try {
+    const response = await fetch("https://ipapi.co/json/");
+    if (!response.ok) {
+      throw new Error("country lookup failed");
+    }
+
+    const payload = await response.json();
+    return payload.country_code ?? inferCountryFromLocale();
+  } catch {
+    return inferCountryFromLocale();
+  }
+}
+
+async function fetchRates() {
+  const endpoint = import.meta.env.VITE_EXCHANGE_RATES_URL || "https://open.er-api.com/v6/latest/USD";
+
+  try {
+    const response = await fetch(endpoint);
+    if (!response.ok) {
+      throw new Error("rates lookup failed");
+    }
+
+    const payload = await response.json();
+    const rates = payload.rates ?? payload.conversion_rates ?? {};
+
+    return {
+      ...FALLBACK_RATES,
+      ...Object.fromEntries(
+        Object.entries(rates).filter(([code]) => Object.hasOwn(FALLBACK_RATES, code)),
+      ),
+    };
+  } catch {
+    return FALLBACK_RATES;
+  }
+}
+
+function buildPriceFormatter(currency) {
+  const meta = currencyOptions.find((option) => option.value === currency) ?? currencyOptions[0];
+
+  return new Intl.NumberFormat(meta.locale, {
+    style: "currency",
+    currency,
+    maximumFractionDigits: currency === "XOF" ? 0 : 2,
+  });
+}
+
+function getCurrencyLabel(code) {
+  return currencyOptions.find((option) => option.value === code)?.label ?? code;
+}
+
+function getShippingCostUsd(subtotalUsd, shippingConfig) {
+  if (shippingConfig.mode === "percentage") {
+    return subtotalUsd * (shippingConfig.percentageRate / 100);
+  }
+
+  if (shippingConfig.mode === "free-threshold") {
+    return subtotalUsd >= shippingConfig.freeThresholdUsd ? 0 : shippingConfig.flatFeeUsd;
+  }
+
+  return shippingConfig.flatFeeUsd;
+}
+
+export function StoreProvider({ children }) {
+  const [products, setProducts] = useState(() => readStorage(STORAGE_KEYS.products, defaultProducts));
+  const [cart, setCart] = useState(() => readStorage(STORAGE_KEYS.cart, []));
+  const [orders, setOrders] = useState(() => readStorage(STORAGE_KEYS.orders, defaultOrders));
+  const [shippingConfig, setShippingConfig] = useState(() =>
+    readStorage(STORAGE_KEYS.shipping, defaultShippingConfig),
+  );
+  const [paymentLogs, setPaymentLogs] = useState(() =>
+    readStorage(STORAGE_KEYS.logs, defaultPaymentLogs),
+  );
+  const [adminAuthenticated, setAdminAuthenticated] = useState(() =>
+    readStorage(STORAGE_KEYS.admin, false),
+  );
+  const [currentCurrency, setCurrentCurrency] = useState(() =>
+    readStorage(STORAGE_KEYS.currency, "NGN"),
+  );
+  const [exchangeRates, setExchangeRates] = useState(FALLBACK_RATES);
+  const [loadingRates, setLoadingRates] = useState(true);
+  const [lastRateSync, setLastRateSync] = useState(null);
+
+  useEffect(() => {
+    window.localStorage.setItem(STORAGE_KEYS.products, JSON.stringify(products));
+  }, [products]);
+
+  useEffect(() => {
+    window.localStorage.setItem(STORAGE_KEYS.cart, JSON.stringify(cart));
+  }, [cart]);
+
+  useEffect(() => {
+    window.localStorage.setItem(STORAGE_KEYS.orders, JSON.stringify(orders));
+  }, [orders]);
+
+  useEffect(() => {
+    window.localStorage.setItem(STORAGE_KEYS.shipping, JSON.stringify(shippingConfig));
+  }, [shippingConfig]);
+
+  useEffect(() => {
+    window.localStorage.setItem(STORAGE_KEYS.logs, JSON.stringify(paymentLogs));
+  }, [paymentLogs]);
+
+  useEffect(() => {
+    window.localStorage.setItem(STORAGE_KEYS.admin, JSON.stringify(adminAuthenticated));
+  }, [adminAuthenticated]);
+
+  useEffect(() => {
+    window.localStorage.setItem(STORAGE_KEYS.currency, JSON.stringify(currentCurrency));
+  }, [currentCurrency]);
+
+  useEffect(() => {
+    let active = true;
+
+    async function bootstrapRegionalPricing() {
+      const [countryCode, rates] = await Promise.all([detectCountry(), fetchRates()]);
+      if (!active) {
+        return;
+      }
+
+      setExchangeRates(rates);
+      setLastRateSync(new Date().toISOString());
+      setLoadingRates(false);
+
+      const stored = readStorage(STORAGE_KEYS.currency, null);
+      if (!stored) {
+        setCurrentCurrency(COUNTRY_TO_CURRENCY[countryCode] ?? "USD");
+      }
+    }
+
+    bootstrapRegionalPricing();
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const cartLines = cart
+    .map((entry) => {
+      const product = products.find((item) => item.id === entry.productId);
+      if (!product) {
+        return null;
+      }
+
+      return {
+        ...product,
+        quantity: entry.quantity,
+        lineTotalUsd: product.priceUsd * entry.quantity,
+      };
+    })
+    .filter(Boolean);
+
+  const cartCount = cartLines.reduce((total, item) => total + item.quantity, 0);
+  const subtotalUsd = cartLines.reduce((total, item) => total + item.lineTotalUsd, 0);
+  const shippingUsd = getShippingCostUsd(subtotalUsd, shippingConfig);
+  const totalUsd = subtotalUsd + shippingUsd;
+
+  function formatPrice(amountUsd, currency = currentCurrency) {
+    const rate = exchangeRates[currency] ?? 1;
+    return buildPriceFormatter(currency).format(amountUsd * rate);
+  }
+
+  function setCurrency(nextCurrency) {
+    setCurrentCurrency(nextCurrency);
+    toast.success(`Showing prices in ${getCurrencyLabel(nextCurrency)}.`);
+  }
+
+  function addToCart(productId) {
+    const product = products.find((item) => item.id === productId);
+    if (!product) {
+      return;
+    }
+
+    setCart((current) => {
+      const existing = current.find((item) => item.productId === productId);
+      if (existing) {
+        return current.map((item) =>
+          item.productId === productId ? { ...item, quantity: item.quantity + 1 } : item,
+        );
+      }
+
+      return [...current, { productId, quantity: 1 }];
+    });
+
+    toast.success(`${product.name} added to cart.`);
+  }
+
+  function updateCartQuantity(productId, quantity) {
+    if (quantity <= 0) {
+      setCart((current) => current.filter((item) => item.productId !== productId));
+      return;
+    }
+
+    setCart((current) =>
+      current.map((item) => (item.productId === productId ? { ...item, quantity } : item)),
+    );
+  }
+
+  function removeFromCart(productId) {
+    const product = products.find((item) => item.id === productId);
+    setCart((current) => current.filter((item) => item.productId !== productId));
+    if (product) {
+      toast.message(`${product.name} removed from cart.`);
+    }
+  }
+
+  function clearCart() {
+    setCart([]);
+  }
+
+  async function beginHostedCheckout() {
+    if (!cartLines.length) {
+      toast.error("Your cart is empty.");
+      return;
+    }
+
+    const reference = `SDG-${Date.now()}`;
+    const baseLog = {
+      id: reference,
+      reference,
+      orderNumber: "Pending webhook confirmation",
+      status: "initialized",
+      channel: "card / bank / USSD / Apple Pay",
+      createdAt: new Date().toISOString(),
+      amountUsd: totalUsd,
+    };
+
+    setPaymentLogs((current) => [baseLog, ...current]);
+
+    const endpoint = import.meta.env.VITE_PAYSTACK_INIT_ENDPOINT;
+    if (!endpoint) {
+      toast.info(
+        "Hosted checkout hook is ready. Connect VITE_PAYSTACK_INIT_ENDPOINT to your backend so Paystack can initialize securely.",
+      );
+      return;
+    }
+
+    try {
+      const response = await fetch(endpoint, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          reference,
+          currency: currentCurrency,
+          items: cartLines.map((item) => ({
+            id: item.id,
+            name: item.name,
+            quantity: item.quantity,
+            priceUsd: item.priceUsd,
+          })),
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("checkout initialization failed");
+      }
+
+      const payload = await response.json();
+      const redirectUrl = payload.authorization_url ?? payload.data?.authorization_url;
+
+      if (!redirectUrl) {
+        throw new Error("missing authorization url");
+      }
+
+      window.location.assign(redirectUrl);
+    } catch {
+      toast.error(
+        "Could not initialize Paystack checkout. Orders are only confirmed after a verified webhook event.",
+      );
+    }
+  }
+
+  function loginAdmin(password) {
+    const expectedPassword = import.meta.env.VITE_ADMIN_PORTAL_PASSWORD || "SirDavidAdmin!2026";
+    if (password !== expectedPassword) {
+      toast.error("Incorrect admin password.");
+      return false;
+    }
+
+    setAdminAuthenticated(true);
+    toast.success("Admin portal unlocked.");
+    return true;
+  }
+
+  function logoutAdmin() {
+    setAdminAuthenticated(false);
+    toast.message("Admin portal locked.");
+  }
+
+  function upsertProduct(productInput) {
+    startTransition(() => {
+      setProducts((current) => {
+        const payload = {
+          ...productInput,
+          priceUsd: Number(productInput.priceUsd),
+          stock: Number(productInput.stock),
+        };
+
+        const exists = current.some((item) => item.id === payload.id);
+        if (exists) {
+          return current.map((item) => (item.id === payload.id ? { ...item, ...payload } : item));
+        }
+
+        return [payload, ...current];
+      });
+    });
+
+    toast.success("Product saved.");
+  }
+
+  function deleteProduct(productId) {
+    startTransition(() => {
+      setProducts((current) => current.filter((item) => item.id !== productId));
+      setCart((current) => current.filter((item) => item.productId !== productId));
+    });
+
+    toast.message("Product deleted.");
+  }
+
+  function updateOrderStatus(orderId, nextStatus) {
+    setOrders((current) =>
+      current.map((order) => (order.id === orderId ? { ...order, status: nextStatus } : order)),
+    );
+    toast.success(`Order status updated to ${nextStatus}.`);
+  }
+
+  function updateShipping(nextConfig) {
+    setShippingConfig({
+      ...nextConfig,
+      flatFeeUsd: Number(nextConfig.flatFeeUsd),
+      percentageRate: Number(nextConfig.percentageRate),
+      freeThresholdUsd: Number(nextConfig.freeThresholdUsd),
+    });
+    toast.success("Shipping rules updated.");
+  }
+
+  const value = {
+    products,
+    cartLines,
+    cartCount,
+    subtotalUsd,
+    shippingUsd,
+    totalUsd,
+    orders,
+    paymentLogs,
+    shippingConfig,
+    currentCurrency,
+    exchangeRates,
+    loadingRates,
+    lastRateSync,
+    adminAuthenticated,
+    currencyOptions,
+    addToCart,
+    updateCartQuantity,
+    removeFromCart,
+    clearCart,
+    beginHostedCheckout,
+    formatPrice,
+    setCurrency,
+    loginAdmin,
+    logoutAdmin,
+    upsertProduct,
+    deleteProduct,
+    updateOrderStatus,
+    updateShipping,
+  };
+
+  return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>;
+}
+
+export function useStore() {
+  const context = useContext(StoreContext);
+  if (!context) {
+    throw new Error("useStore must be used within StoreProvider");
+  }
+
+  return context;
+}
