@@ -3,17 +3,27 @@ import * as Tabs from "@radix-ui/react-tabs";
 import clsx from "clsx";
 import {
   AlertCircle,
-  ArrowRight,
+  Activity,
   BadgeDollarSign,
-  Bug,
   ChevronDown,
   ChevronUp,
+  DollarSign,
+  Eye,
+  EyeOff,
+  GitMerge,
   ImagePlus,
+  Image as ImageIcon,
+  Info,
+  Layers,
   Loader2,
   LogOut,
+  Lock,
+  Mail,
   Package,
   Pencil,
+  Percent,
   Plus,
+  Search,
   Shield,
   ShoppingBag,
   Trash2,
@@ -48,7 +58,7 @@ import { LoadingInlineLabel } from "../components/AppLoading";
 
 const ORDER_TABS = [
   { value: "orders", label: "Orders", icon: Package },
-  { value: "products", label: "Products", icon: ShoppingBag },
+  { value: "products", label: "Products", icon: Layers },
   { value: "shipping", label: "Shipping", icon: Truck },
 ];
 
@@ -184,11 +194,11 @@ function normalizeOrderStatus(value) {
 
 function statusTone(status) {
   return {
-    pending: "bg-amber-100 text-amber-700 ring-amber-200",
-    confirmed: "bg-blue-100 text-blue-700 ring-blue-200",
-    shipped: "bg-violet-100 text-violet-700 ring-violet-200",
-    delivered: "bg-emerald-100 text-emerald-700 ring-emerald-200",
-    cancelled: "bg-rose-100 text-rose-700 ring-rose-200",
+    pending: "border border-amber-500/25 bg-amber-500/15 text-amber-300",
+    confirmed: "border border-blue-500/25 bg-blue-500/15 text-blue-300",
+    shipped: "border border-purple-500/25 bg-purple-500/15 text-purple-300",
+    delivered: "border border-cyan-500/25 bg-cyan-500/15 text-cyan-300",
+    cancelled: "border border-rose-500/25 bg-rose-500/15 text-rose-300",
   }[normalizeOrderStatus(status)];
 }
 
@@ -209,6 +219,25 @@ function normalizeCondition(value) {
   if (normalized.includes("refurb")) return "Refurbished";
   if (normalized.includes("used")) return "Used";
   return "New";
+}
+
+function conditionTone(value) {
+  const normalized = String(value || "").toLowerCase();
+
+  if (normalized.includes("new")) {
+    return "border border-emerald-500/25 bg-emerald-500/15 text-emerald-300";
+  }
+  if (normalized.includes("like")) {
+    return "border border-blue-500/25 bg-blue-500/15 text-blue-300";
+  }
+  if (normalized.includes("excellent")) {
+    return "border border-purple-500/25 bg-purple-500/15 text-purple-300";
+  }
+  if (normalized.includes("good") || normalized.includes("fair") || normalized.includes("used")) {
+    return "border border-amber-500/25 bg-amber-500/15 text-amber-300";
+  }
+
+  return "border border-white/15 bg-white/10 text-white/65";
 }
 
 function pick(record, keys, fallback = "") {
@@ -422,14 +451,14 @@ function LoginHintCard({ error }) {
   const hint = LOGIN_HINTS[error.code];
 
   return (
-    <div className="rounded-[28px] border border-blue-200 bg-blue-50 p-5 text-sm text-slate-700">
+    <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-5 text-sm text-white/70">
       <div className="flex items-start gap-3">
-        <div className="mt-0.5 rounded-2xl bg-white p-2 text-blue-600 shadow-sm">
+        <div className="mt-0.5 rounded-xl bg-gradient-to-br from-blue-600/25 to-purple-600/25 p-2 text-blue-300">
           <AlertCircle className="h-5 w-5" />
         </div>
         <div className="space-y-2">
-          <p className="text-base font-semibold text-slate-950">{hint.title}</p>
-          <p className="leading-6 text-slate-600">{hint.copy}</p>
+          <p className="text-base font-semibold text-white">{hint.title}</p>
+          <p className="leading-6 text-white/55">{hint.copy}</p>
         </div>
       </div>
     </div>
@@ -440,7 +469,7 @@ function PortalCard({ children, className = "" }) {
   return (
     <div
       className={clsx(
-        "rounded-[26px] border border-slate-200/70 bg-white/95 p-4 shadow-[0_22px_80px_rgba(15,23,42,0.12)] backdrop-blur sm:rounded-[30px] sm:p-6",
+        "rounded-2xl border border-white/10 bg-[#111827] p-4 text-white shadow-[0_24px_80px_rgba(2,6,23,0.42)] backdrop-blur sm:p-6",
         className,
       )}
     >
@@ -452,9 +481,9 @@ function PortalCard({ children, className = "" }) {
 function Field({ label, children, hint = "" }) {
   return (
     <label className="block space-y-2">
-      <span className="text-sm font-semibold text-slate-900">{label}</span>
+      <span className="text-xs font-semibold uppercase tracking-[0.28em] text-white/55">{label}</span>
       {children}
-      {hint ? <span className="block text-xs leading-5 text-slate-500">{hint}</span> : null}
+      {hint ? <span className="block text-xs leading-5 text-white/30">{hint}</span> : null}
     </label>
   );
 }
@@ -464,7 +493,7 @@ function TextInput(props) {
     <input
       {...props}
       className={clsx(
-        "min-h-11 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-blue-400 focus:ring-4 focus:ring-blue-100",
+        "min-h-11 w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none transition placeholder:text-white/20 focus:border-blue-500 focus:ring-1 focus:ring-blue-500",
         props.className,
       )}
     />
@@ -476,7 +505,7 @@ function TextArea(props) {
     <textarea
       {...props}
       className={clsx(
-        "min-h-[140px] w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-blue-400 focus:ring-4 focus:ring-blue-100",
+        "min-h-[140px] w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none transition placeholder:text-white/20 focus:border-blue-500 focus:ring-1 focus:ring-blue-500",
         props.className,
       )}
     />
@@ -488,7 +517,7 @@ function SelectInput({ options, className = "", ...props }) {
     <select
       {...props}
       className={clsx(
-        "min-h-11 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-950 outline-none transition focus:border-blue-400 focus:ring-4 focus:ring-blue-100",
+        "min-h-11 w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none transition focus:border-blue-500 focus:ring-1 focus:ring-blue-500",
         className,
       )}
     >
@@ -510,6 +539,7 @@ export function AdminPortalPage() {
   });
   const [activeTab, setActiveTab] = useState("orders");
   const [credentials, setCredentials] = useState({ email: "", password: "" });
+  const [showPassword, setShowPassword] = useState(false);
   const [authError, setAuthError] = useState(null);
   const [submittingAuth, setSubmittingAuth] = useState(false);
   const [dashboardLoading, setDashboardLoading] = useState(false);
@@ -529,11 +559,105 @@ export function AdminPortalPage() {
     String(DEFAULT_SHIPPING_SETTINGS.exchangeRateNgnUsd),
   );
   const [shippingDraft, setShippingDraft] = useState(DEFAULT_SHIPPING_SETTINGS);
+  const [orderSearch, setOrderSearch] = useState("");
+  const [orderFilter, setOrderFilter] = useState("all");
+  const [productSearch, setProductSearch] = useState("");
+  const [productCategoryFilter, setProductCategoryFilter] = useState("all");
   const [expandedOrderId, setExpandedOrderId] = useState("");
   const [orderStatusDrafts, setOrderStatusDrafts] = useState({});
   const [productDialogOpen, setProductDialogOpen] = useState(false);
   const [productForm, setProductForm] = useState(EMPTY_PRODUCT_FORM);
   const [deleteTarget, setDeleteTarget] = useState(null);
+
+  const totalRevenueNgn = orders.reduce((total, order) => total + toNumber(order.totalNgn, 0), 0);
+  const orderStats = [
+    {
+      label: "Revenue",
+      value: money(totalRevenueNgn, "NGN"),
+      accent: "from-emerald-400 to-emerald-500",
+      icon: BadgeDollarSign,
+    },
+    {
+      label: "Confirmed",
+      value: orders.filter((order) => normalizeOrderStatus(order.status) === "confirmed").length,
+      accent: "from-blue-400 to-blue-500",
+      icon: Shield,
+    },
+    {
+      label: "Pending",
+      value: orders.filter((order) => normalizeOrderStatus(order.status) === "pending").length,
+      accent: "from-indigo-400 to-indigo-500",
+      icon: Package,
+    },
+    {
+      label: "In Route",
+      value: orders.filter((order) => normalizeOrderStatus(order.status) === "shipped").length,
+      accent: "from-purple-400 to-purple-500",
+      icon: Truck,
+    },
+    {
+      label: "Delivered",
+      value: orders.filter((order) => normalizeOrderStatus(order.status) === "delivered").length,
+      accent: "from-cyan-400 to-cyan-500",
+      icon: Activity,
+    },
+    {
+      label: "Total",
+      value: orders.length,
+      accent: "from-white/35 to-white/10",
+      icon: Layers,
+    },
+  ];
+  const filteredOrders = orders.filter((order) => {
+    const query = orderSearch.trim().toLowerCase();
+    const matchesQuery =
+      !query ||
+      [
+        order.reference,
+        order.customerName,
+        order.customerEmail,
+        order.paystackReference,
+        order.itemsSummary,
+      ]
+        .join(" ")
+        .toLowerCase()
+        .includes(query);
+    const matchesStatus =
+      orderFilter === "all" || normalizeOrderStatus(order.status) === orderFilter;
+
+    return matchesQuery && matchesStatus;
+  });
+  const filteredProducts = products.filter((product) => {
+    const query = productSearch.trim().toLowerCase();
+    const matchesQuery =
+      !query ||
+      [product.name, product.brand, product.description].join(" ").toLowerCase().includes(query);
+    const matchesCategory =
+      productCategoryFilter === "all" || product.category === productCategoryFilter;
+
+    return matchesQuery && matchesCategory;
+  });
+  const shippingPreviewRows = [150000, 320000, 540000].map((subtotal) => {
+    const subtotalValue = toNumber(subtotal, 0);
+    let shippingAmount = 0;
+
+    if (
+      shippingDraft.freeThresholdEnabled &&
+      subtotalValue >= toNumber(shippingDraft.freeThreshold, 0)
+    ) {
+      shippingAmount = 0;
+    } else if (shippingDraft.mode === "percentage") {
+      shippingAmount = subtotalValue * (toNumber(shippingDraft.value, 0) / 100);
+    } else {
+      shippingAmount = toNumber(shippingDraft.value, 0);
+    }
+
+    return {
+      subtotal: subtotalValue,
+      shipping: Math.round(shippingAmount),
+      total: Math.round(subtotalValue + shippingAmount),
+    };
+  });
 
   useEffect(() => {
     verifyStoredSession();
@@ -901,15 +1025,15 @@ export function AdminPortalPage() {
     return (
       <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,rgba(74,123,255,0.24),transparent_24%),radial-gradient(circle_at_top_right,rgba(139,92,246,0.18),transparent_28%),linear-gradient(180deg,#07101f_0%,#040816_48%,#02040d_100%)] px-4 py-16 text-white md:px-6">
         <div className="mx-auto flex min-h-[70vh] max-w-2xl items-center justify-center">
-          <PortalCard className="w-full max-w-xl bg-white/10 p-10 text-center text-white shadow-[0_32px_120px_rgba(2,6,23,0.45)]">
-            <div className="mx-auto inline-flex rounded-3xl bg-white/10 p-4 text-sky-300">
+          <PortalCard className="w-full max-w-xl bg-[#111827] p-10 text-center text-white shadow-[0_32px_120px_rgba(2,6,23,0.45)]">
+            <div className="mx-auto inline-flex rounded-3xl bg-white/5 p-4 text-blue-300">
               <Loader2 className="h-8 w-8 animate-spin" />
             </div>
-            <p className="mt-6 text-xs font-semibold uppercase tracking-[0.32em] text-sky-300">
+            <p className="mt-6 text-xs font-semibold uppercase tracking-[0.32em] text-blue-300">
               Secure Admin Portal
             </p>
             <h1 className="mt-3 font-['Sora'] text-4xl font-semibold">Verifying operator session</h1>
-            <p className="mt-4 text-sm leading-7 text-slate-300">
+            <p className="mt-4 text-sm leading-7 text-white/55">
               Checking for a valid admin session and loading SirDavid Gadgets operations.
             </p>
           </PortalCard>
@@ -920,151 +1044,131 @@ export function AdminPortalPage() {
 
   if (!authState.authenticated) {
     return (
-      <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,rgba(74,123,255,0.24),transparent_24%),radial-gradient(circle_at_top_right,rgba(139,92,246,0.18),transparent_28%),linear-gradient(180deg,#07101f_0%,#040816_48%,#02040d_100%)] px-4 py-8 text-white md:px-6 md:py-12">
-        <div className="mx-auto flex min-h-[80vh] max-w-6xl flex-col justify-center gap-6 md:grid md:grid-cols-[1.05fr_480px] md:gap-8">
-          <div className="rounded-[30px] border border-white/10 bg-white/8 p-6 shadow-[0_32px_120px_rgba(2,6,23,0.4)] backdrop-blur md:p-12">
-            <div className="inline-flex items-center gap-4">
-              <span className="inline-flex h-14 w-14 items-center justify-center rounded-[20px] bg-gradient-to-br from-blue-500 to-violet-500 shadow-[0_18px_40px_rgba(74,123,255,0.3)] md:h-16 md:w-16 md:rounded-[22px]">
-                <Shield className="h-7 w-7 text-white" />
-              </span>
-              <div>
-                <p className="font-['Sora'] text-2xl font-semibold">SirDavid</p>
-                <p className="text-sm font-semibold uppercase tracking-[0.2em] text-sky-300 md:text-xs md:tracking-[0.32em]">
-                  Admin Portal
-                </p>
-              </div>
-            </div>
-            <p className="mt-8 text-sm font-semibold uppercase tracking-[0.2em] text-sky-300 md:mt-10 md:text-xs md:tracking-[0.32em]">
-              Secure internal operations
+      <div className="flex min-h-screen items-center justify-center bg-[#0b0f1a] bg-[radial-gradient(ellipse_at_center,rgba(59,130,246,0.08)_0%,transparent_70%)] px-4 py-10 text-white">
+        <PortalCard className="w-full max-w-[420px] rounded-2xl p-8">
+          <div className="flex flex-col items-center text-center">
+            <span className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-blue-600 to-purple-600 shadow-[0_18px_40px_rgba(59,130,246,0.22)]">
+              <Shield className="h-5 w-5 text-white" />
+            </span>
+            <h1 className="mt-5 font-['Sora'] text-3xl font-semibold text-white">Admin Portal</h1>
+            <p className="mt-2 text-[11px] font-semibold uppercase tracking-[0.38em] text-white/40">
+              SIRDAVID MULTI-TRADE LTD
             </p>
-            <h1 className="mt-4 max-w-xl font-['Sora'] text-3xl font-semibold leading-[1.02] min-[390px]:text-4xl md:text-6xl">
-              Orders, products, and shipping in one hidden control room.
-            </h1>
-            <p className="mt-5 max-w-2xl text-sm leading-7 text-slate-300 md:mt-6 md:text-base md:leading-8">
-              {adminApiConfigured
-                ? "Authenticate with your operator email and password. This hidden route is designed for SirDavid Gadgets staff using token-based access backed by the external admin service."
-                : "Authenticate with your provisioned Django staff username or email and password. This hidden route stays inside the SirDavid Gadgets storefront and uses local admin mode."}
-            </p>
-            <div className="mt-8 grid gap-3 text-sm text-slate-200 min-[390px]:grid-cols-2 xl:flex xl:flex-wrap">
-              <span className="inline-flex min-h-11 items-center justify-center rounded-full border border-white/10 bg-white/6 px-4 py-2 xl:justify-start">
-                {adminApiConfigured ? "X-Admin-Token sessions" : "Django staff sessions"}
-              </span>
-              <span className="inline-flex min-h-11 items-center justify-center rounded-full border border-white/10 bg-white/6 px-4 py-2 xl:justify-start">
-                {adminApiConfigured ? "Supabase edge function" : "Local admin mode"}
-              </span>
-              <span className="inline-flex min-h-11 items-center justify-center rounded-full border border-white/10 bg-white/6 px-4 py-2 xl:justify-start">
-                Paystack-aware order ops
-              </span>
-            </div>
           </div>
 
-          <PortalCard className="self-center p-6 sm:p-8 md:p-9">
-            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-blue-600 md:text-xs md:tracking-[0.28em]">
-              Admin Sign In
-            </p>
-            <h2 className="mt-3 font-['Sora'] text-3xl font-semibold text-slate-950">
-              Operator login
-            </h2>
-            <p className="mt-3 text-sm leading-7 text-slate-600">
-              Use the provisioned admin username or email and password.
-            </p>
-
-            {!adminApiConfigured ? (
-              <div className="mt-6 rounded-[24px] border border-blue-200 bg-blue-50 p-5 text-sm text-blue-900">
-                Local admin mode is active. Sign in with the Django staff account provisioned for
-                this store.
-              </div>
-            ) : null}
-
-            <form onSubmit={submitLogin} className="mt-8 space-y-4">
+          <div className="mt-6 border-t border-white/10 pt-6">
+            <form onSubmit={submitLogin} className="space-y-5">
               <Field label="Email address or username">
-                <TextInput
-                  type="text"
-                  value={credentials.email}
-                  onChange={(event) =>
-                    setCredentials((current) => ({ ...current, email: event.target.value }))
-                  }
-                  placeholder="admin@sirdavid.site or sirdavid"
-                  autoComplete="username"
-                  required
-                />
+                <div className="relative">
+                  <Mail className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-white/30" />
+                  <TextInput
+                    type="text"
+                    value={credentials.email}
+                    onChange={(event) =>
+                      setCredentials((current) => ({ ...current, email: event.target.value }))
+                    }
+                    placeholder="admin@sirdavid.site or sirdavid"
+                    autoComplete="username"
+                    className="pl-11"
+                    required
+                  />
+                </div>
               </Field>
+
               <Field label="Password">
-                <TextInput
-                  type="password"
-                  value={credentials.password}
-                  onChange={(event) =>
-                    setCredentials((current) => ({ ...current, password: event.target.value }))
-                  }
-                  placeholder="Enter your secure password"
-                  autoComplete="current-password"
-                  required
-                />
+                <div className="relative">
+                  <Lock className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-white/30" />
+                  <TextInput
+                    type={showPassword ? "text" : "password"}
+                    value={credentials.password}
+                    onChange={(event) =>
+                      setCredentials((current) => ({ ...current, password: event.target.value }))
+                    }
+                    placeholder="Enter your secure password"
+                    autoComplete="current-password"
+                    className="pl-11 pr-11"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((current) => !current)}
+                    className="absolute right-3 top-1/2 inline-flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-lg text-white/30 transition hover:bg-white/5 hover:text-white/70"
+                  >
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
               </Field>
 
               {authError ? (
-                <div className="rounded-[22px] border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+                <div className="rounded-xl border border-rose-500/25 bg-rose-500/10 px-4 py-3 text-sm text-rose-300">
                   {authError.message}
+                </div>
+              ) : null}
+
+              {!adminApiConfigured ? (
+                <div className="rounded-xl border border-blue-500/20 bg-blue-500/10 px-4 py-3 text-sm text-blue-200">
+                  Local admin mode is active. Sign in with the Django staff account provisioned for
+                  this store.
                 </div>
               ) : null}
 
               <button
                 type="submit"
                 disabled={submittingAuth}
-                className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full bg-slate-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
+                className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 px-5 text-sm font-semibold text-white transition hover:from-blue-500 hover:to-purple-500 disabled:cursor-not-allowed disabled:opacity-70"
               >
-                {submittingAuth ? null : <Shield className="h-4 w-4" />}
+                {submittingAuth ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
                 <LoadingInlineLabel
                   loading={submittingAuth}
-                  idleLabel="Enter Admin Portal"
-                  loadingLabel="Signing in..."
-                  minWidthClass="min-w-[180px]"
+                  idleLabel="Sign In to Dashboard"
+                  loadingLabel="Authenticating..."
+                  minWidthClass="min-w-[170px]"
                 />
               </button>
             </form>
 
-            <div className="mt-6 space-y-3">
+            <div className="mt-5 space-y-3">
               <LoginHintCard error={authError} />
-              <div className="rounded-[24px] border border-slate-200 bg-slate-50 p-5 text-sm text-slate-600">
-                Admin registration is local-only. Provision the account offline, then return here
-                and sign in with the issued credentials.
-              </div>
             </div>
-          </PortalCard>
-        </div>
+          </div>
+
+          <p className="mt-6 text-center text-xs text-white/25">
+            Protected by secure authentication · SIRDAVID MULTI-TRADE LTD
+          </p>
+        </PortalCard>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,rgba(74,123,255,0.24),transparent_24%),radial-gradient(circle_at_top_right,rgba(139,92,246,0.18),transparent_28%),linear-gradient(180deg,#07101f_0%,#040816_48%,#02040d_100%)] pb-12 text-slate-950">
-      <header className="sticky top-0 z-40 border-b border-white/10 bg-slate-950/80 text-white backdrop-blur-2xl">
-        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-4 py-3 md:px-6 md:py-4">
+    <div className="min-h-screen bg-[#0b0f1a] text-white">
+      <header className="sticky top-0 z-50 h-16 border-b border-white/10 bg-[#0b0f1a]/95 text-white backdrop-blur">
+        <div className="mx-auto flex h-full max-w-7xl flex-wrap items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
           <div className="flex min-w-0 items-center gap-3 md:gap-4">
-            <span className="inline-flex h-11 w-11 items-center justify-center rounded-[16px] bg-gradient-to-br from-blue-500 to-violet-500 shadow-[0_18px_40px_rgba(74,123,255,0.3)] md:h-12 md:w-12 md:rounded-[18px]">
+            <span className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-blue-600 to-purple-600 shadow-[0_18px_40px_rgba(59,130,246,0.22)]">
               <Shield className="h-5 w-5 text-white" />
             </span>
             <div className="min-w-0">
-              <p className="truncate font-['Sora'] text-lg font-semibold md:text-xl">SirDavid</p>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-sky-300 md:text-[10px] md:tracking-[0.32em]">
-                Admin Portal
+              <p className="truncate font-['Sora'] text-lg font-semibold text-white">SirDavid</p>
+              <p className="text-[11px] font-medium text-white/40">
+                Admin
               </p>
             </div>
           </div>
 
           <Tabs.Root value={activeTab} onValueChange={setActiveTab} className="order-3 w-full md:order-none md:min-w-0 md:flex-1">
             <div className="-mx-4 overflow-x-auto px-4 no-scrollbar md:mx-0 md:px-0">
-              <Tabs.List className="mx-auto flex w-max min-w-full items-center gap-2 rounded-full border border-white/10 bg-white/8 p-2 md:w-fit md:min-w-0">
+              <Tabs.List className="mx-auto flex w-max min-w-full items-center gap-2 rounded-xl bg-transparent p-0 md:w-fit md:min-w-0">
               {ORDER_TABS.map((tab) => {
                 const Icon = tab.icon;
                 return (
                   <Tabs.Trigger
                     key={tab.value}
                     value={tab.value}
-                    className="inline-flex min-h-11 shrink-0 items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold text-slate-300 transition hover:text-white data-[state=active]:bg-white data-[state=active]:text-slate-950"
+                    className="inline-flex min-h-10 shrink-0 items-center gap-2 rounded-xl px-4 py-1.5 text-sm font-medium text-white/50 transition hover:bg-white/5 hover:text-white data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white"
                   >
                     <Icon className="h-4 w-4" />
-                    <span>{tab.label}</span>
+                    <span className="hidden sm:inline">{tab.label}</span>
                   </Tabs.Trigger>
                 );
               })}
@@ -1077,15 +1181,15 @@ export function AdminPortalPage() {
               type="button"
               onClick={runDebugCheck}
               disabled={debugging}
-              className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/6 text-sm font-semibold text-white transition hover:bg-white/10 disabled:opacity-60 md:h-auto md:w-auto md:gap-2 md:px-4 md:py-2.5"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-xl text-white/50 transition hover:bg-white/5 hover:text-white disabled:opacity-60 md:h-10 md:w-auto md:gap-2 md:px-3"
             >
-              {debugging ? <Loader2 className="h-4 w-4 animate-spin" /> : <Bug className="h-4 w-4" />}
+              {debugging ? <Loader2 className="h-4 w-4 animate-spin" /> : <Activity className="h-4 w-4" />}
               <span className="hidden sm:inline">Debug</span>
             </button>
             <button
               type="button"
               onClick={logout}
-              className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/6 text-sm font-semibold text-white transition hover:bg-white/10 md:h-auto md:w-auto md:gap-2 md:px-4 md:py-2.5"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-xl text-white/50 transition hover:bg-white/5 hover:text-rose-400 md:h-10 md:w-auto md:gap-2 md:px-3"
             >
               <LogOut className="h-4 w-4" />
               <span className="hidden sm:inline">Logout</span>
@@ -1094,106 +1198,142 @@ export function AdminPortalPage() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-7xl px-4 py-6 md:px-6 md:py-8">
-        <section className="mb-8 grid gap-4 lg:grid-cols-[1.2fr_repeat(3,0.8fr)] lg:gap-5">
-          <PortalCard className="bg-white text-slate-950">
-            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-blue-600 md:text-xs md:tracking-[0.3em]">
-              Authenticated operator
-            </p>
-            <h1 className="mt-3 font-['Sora'] text-2xl font-semibold md:text-4xl">
-              Welcome back, {authState.admin?.name || "Admin"}.
-            </h1>
-            <p className="mt-4 max-w-2xl text-sm leading-7 text-slate-600">
-              Hidden route access is active. Manage verified orders, inventory, shipping logic,
-              and the NGN/USD exchange baseline from one control surface.
-            </p>
-            <div className="mt-6 grid gap-3 text-sm text-slate-500 min-[390px]:grid-cols-2 xl:flex xl:flex-wrap">
-              <span className="inline-flex min-h-11 items-center justify-center rounded-full border border-slate-200 bg-slate-50 px-4 py-2 xl:justify-start">
-                {authState.admin?.email}
+      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+        <section className="mb-8">
+          <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.32em] text-white/35">
+                Authenticated operator
+              </p>
+              <h1 className="mt-2 font-['Sora'] text-3xl font-semibold text-white">
+                Welcome back, {authState.admin?.name || "Admin"}.
+              </h1>
+            </div>
+            <div className="flex flex-wrap gap-2 text-sm">
+              <span className="inline-flex min-h-10 items-center rounded-xl border border-white/10 bg-white/[0.03] px-3 text-white/60">
+                {authState.admin?.email || authState.admin?.name}
               </span>
-              <span className="inline-flex min-h-11 items-center justify-center rounded-full border border-slate-200 bg-slate-50 px-4 py-2 capitalize xl:justify-start">
+              <span className="inline-flex min-h-10 items-center rounded-xl border border-white/10 bg-white/[0.03] px-3 capitalize text-white/60">
                 {authState.admin?.role || "operator"}
               </span>
-              <span className="inline-flex min-h-11 items-center justify-center rounded-full border border-slate-200 bg-slate-50 px-4 py-2 xl:justify-start">
-                Token session active
-              </span>
             </div>
-          </PortalCard>
+          </div>
 
-          <PortalCard className="bg-white">
-            <p className="text-sm text-slate-500">Orders</p>
-            <p className="mt-2 font-['Sora'] text-4xl font-semibold">{orders.length}</p>
-            <p className="mt-3 text-sm text-slate-500">All order records loaded from the admin API.</p>
-          </PortalCard>
-          <PortalCard className="bg-white">
-            <p className="text-sm text-slate-500">Products</p>
-            <p className="mt-2 font-['Sora'] text-4xl font-semibold">{products.length}</p>
-            <p className="mt-3 text-sm text-slate-500">Visible catalog entries managed from this portal.</p>
-          </PortalCard>
-          <PortalCard className="bg-white">
-            <p className="text-sm text-slate-500">NGN / USD</p>
-            <p className="mt-2 font-['Sora'] text-4xl font-semibold">
-              {toNumber(shippingSettings.exchangeRateNgnUsd).toLocaleString("en-NG")}
-            </p>
-            <p className="mt-3 text-sm text-slate-500">Current exchange baseline used for admin previews.</p>
-          </PortalCard>
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-6">
+            {orderStats.map((stat) => {
+              const Icon = stat.icon;
+
+              return (
+                <PortalCard key={stat.label} className="relative overflow-hidden p-4">
+                  <div className={clsx("absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r", stat.accent)} />
+                  <div className="flex items-center gap-3">
+                    <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-white/5 text-white/45">
+                      <Icon className="h-4 w-4" />
+                    </span>
+                    <p className="text-xs uppercase tracking-[0.24em] text-white/40">{stat.label}</p>
+                  </div>
+                  <p className="mt-4 font-['Sora'] text-2xl font-semibold text-white">{stat.value}</p>
+                </PortalCard>
+              );
+            })}
+          </div>
         </section>
 
         {dashboardLoading ? (
-          <PortalCard className="flex items-center justify-center gap-3 bg-white py-20 text-slate-600">
-            <Loader2 className="h-5 w-5 animate-spin text-blue-600" />
+          <PortalCard className="flex items-center justify-center gap-3 py-20 text-white/60">
+            <Loader2 className="h-5 w-5 animate-spin text-blue-400" />
             Loading live admin data...
           </PortalCard>
         ) : null}
 
         <Tabs.Root value={activeTab} onValueChange={setActiveTab}>
           <Tabs.Content value="orders" className="space-y-5">
-            <PortalCard className="bg-white">
+            <PortalCard>
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
-                  <p className="text-sm font-semibold uppercase tracking-[0.2em] text-blue-600 md:text-xs md:tracking-[0.28em]">
+                  <p className="text-xs font-semibold uppercase tracking-[0.28em] text-white/35">
                     Orders
                   </p>
-                  <h2 className="mt-2 font-['Sora'] text-2xl font-semibold text-slate-950">
-                    Verified order queue
+                  <h2 className="mt-2 font-['Sora'] text-2xl font-semibold text-white">
+                    Verified order dashboard
                   </h2>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => loadOrders()}
-                  disabled={ordersLoading}
-                  className="inline-flex min-h-11 items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-900 transition hover:border-blue-200 hover:bg-blue-50 disabled:opacity-60"
-                >
-                  {ordersLoading ? null : <BadgeDollarSign className="h-4 w-4 text-blue-600" />}
-                  <LoadingInlineLabel
-                    loading={ordersLoading}
-                    idleLabel="Refresh orders"
-                    loadingLabel="Refreshing..."
-                    minWidthClass="min-w-[144px]"
-                  />
-                </button>
+                <p className="text-sm text-white/30">{filteredOrders.length} results</p>
               </div>
 
-              {!orders.length ? (
-                <div className="mt-8 rounded-[28px] border border-dashed border-slate-200 bg-slate-50 px-6 py-14 text-center">
-                  <Package className="mx-auto h-9 w-9 text-slate-300" />
-                  <h3 className="mt-4 font-['Sora'] text-2xl font-semibold text-slate-900">
-                    No orders yet
+              <div className="mt-6 flex items-center gap-3 rounded-xl border border-emerald-500/20 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-400">
+                <Shield className="h-4 w-4" />
+                Payment-confirmed orders and shipping updates are managed from this queue.
+              </div>
+
+              <div className="mt-6 rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+                <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+                  <div className="flex flex-1 flex-col gap-4 lg:flex-row">
+                    <div className="relative w-full lg:max-w-md">
+                      <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-white/30" />
+                      <TextInput
+                        value={orderSearch}
+                        onChange={(event) => setOrderSearch(event.target.value)}
+                        placeholder="Search reference, customer, email, or payment ref"
+                        className="pl-11"
+                      />
+                    </div>
+                    <div className="-mx-1 flex flex-wrap gap-2 overflow-x-auto px-1">
+                      {[{ value: "all", label: "All" }, ...ORDER_STATUS_OPTIONS].map((option) => (
+                        <button
+                          key={option.value}
+                          type="button"
+                          onClick={() => setOrderFilter(option.value)}
+                          className={clsx(
+                            "rounded-full border px-4 py-2 text-sm transition",
+                            orderFilter === option.value
+                              ? "border-transparent bg-gradient-to-r from-blue-600 to-purple-600 text-white"
+                              : "border-white/15 text-white/50 hover:border-blue-500/50 hover:text-blue-400",
+                          )}
+                        >
+                          {option.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => loadOrders()}
+                    disabled={ordersLoading}
+                    className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-white/10 px-4 py-2.5 text-sm font-semibold text-white/60 transition hover:bg-white/5 hover:text-white disabled:opacity-60"
+                  >
+                    {ordersLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Activity className="h-4 w-4" />}
+                    <LoadingInlineLabel
+                      loading={ordersLoading}
+                      idleLabel="Refresh"
+                      loadingLabel="Refreshing..."
+                      minWidthClass="min-w-[108px]"
+                    />
+                  </button>
+                </div>
+              </div>
+
+              {!filteredOrders.length ? (
+                <div className="mt-8 rounded-2xl border border-white/10 bg-[#111827] px-6 py-14 text-center">
+                  <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-white/5">
+                    <Package className="h-7 w-7 text-white/20" />
+                  </div>
+                  <h3 className="mt-4 font-['Sora'] text-2xl font-semibold text-white">
+                    No orders to display
                   </h3>
-                  <p className="mt-3 text-sm leading-7 text-slate-500">
-                    Once the backend returns verified orders, they will appear here with status
-                    controls and full payment metadata.
+                  <p className="mt-3 text-sm leading-7 text-white/30">
+                    Adjust the current filters or wait for new orders to arrive from the admin API.
                   </p>
                 </div>
               ) : (
                 <>
                   <div className="mt-6 space-y-4 md:hidden">
-                    {orders.map((order) => {
+                    {filteredOrders.map((order) => {
                       const expanded = expandedOrderId === order.id;
                       return (
                         <article
                           key={order.id}
-                          className="rounded-[26px] border border-slate-200 bg-slate-50 p-4 shadow-sm"
+                          className="rounded-2xl border border-white/10 bg-[#111827] p-4"
                         >
                           <button
                             type="button"
@@ -1203,33 +1343,30 @@ export function AdminPortalPage() {
                             className="flex w-full items-start justify-between gap-3 text-left"
                           >
                             <div className="space-y-1">
-                              <p className="text-sm font-semibold text-slate-950">{order.reference}</p>
-                              <p className="text-sm text-slate-500">{order.customerName}</p>
-                              <p className="text-sm text-slate-500">{order.customerEmail}</p>
+                              <p className="font-mono text-sm font-semibold text-blue-400">{order.reference}</p>
+                              <p className="text-sm text-white">{order.customerName}</p>
+                              <p className="text-sm text-white/40">{order.customerEmail}</p>
+                              <p className="text-xs text-white/30">{formatDate(order.createdAt)}</p>
                             </div>
                             <div className="flex flex-col items-end gap-2">
                               <span
                                 className={clsx(
-                                  "inline-flex rounded-full px-3 py-1 text-sm font-semibold ring-1 ring-inset",
+                                  "inline-flex rounded-full px-3 py-1 text-sm font-semibold",
                                   statusTone(order.status),
                                 )}
                               >
                                 {statusLabel(order.status)}
                               </span>
-                              <span className="text-sm font-semibold text-slate-900">
+                              <span className="text-sm font-semibold text-white">
                                 {money(order.totalNgn, "NGN")}
                               </span>
                             </div>
                           </button>
 
-                          <div className="mt-4 grid gap-3 rounded-[22px] bg-white p-4">
+                          <div className="mt-4 grid gap-3 rounded-xl border border-white/10 bg-white/[0.03] p-4">
                             <div>
-                              <p className="text-sm font-semibold text-slate-500">Items</p>
-                              <p className="mt-1 text-sm leading-6 text-slate-700">{order.itemsSummary}</p>
-                            </div>
-                            <div className="flex items-center justify-between gap-4 text-sm">
-                              <span className="text-slate-500">Date</span>
-                              <span className="font-medium text-slate-900">{formatDate(order.createdAt)}</span>
+                              <p className="text-xs uppercase tracking-[0.24em] text-white/40">Items</p>
+                              <p className="mt-2 text-sm leading-6 text-white/75">{order.itemsSummary}</p>
                             </div>
                             <div className="grid gap-3">
                               <SelectInput
@@ -1246,7 +1383,7 @@ export function AdminPortalPage() {
                                 type="button"
                                 onClick={() => persistOrderStatus(order.id)}
                                 disabled={orderSavingId === order.id}
-                                className="inline-flex min-h-11 items-center justify-center rounded-full bg-slate-950 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:opacity-60"
+                                className="inline-flex min-h-11 items-center justify-center rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 px-4 py-3 text-sm font-semibold text-white transition hover:from-blue-500 hover:to-purple-500 disabled:opacity-60"
                               >
                                 <LoadingInlineLabel
                                   loading={orderSavingId === order.id}
@@ -1260,41 +1397,41 @@ export function AdminPortalPage() {
 
                           {expanded ? (
                             <div className="mt-4 grid gap-4">
-                              <div className="rounded-[22px] border border-slate-200 bg-white p-4">
-                                <p className="text-sm font-semibold text-blue-600">Item breakdown</p>
+                              <div className="rounded-xl border border-white/10 bg-white/[0.03] p-4">
+                                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-white/40">Item breakdown</p>
                                 <div className="mt-3 space-y-3">
                                   {order.items.map((item) => (
                                     <div
                                       key={item.id}
-                                      className="rounded-[18px] border border-slate-100 bg-slate-50 px-4 py-3"
+                                      className="rounded-xl border border-white/10 bg-[#0f172a] px-4 py-3"
                                     >
-                                      <p className="font-medium text-slate-900">{item.name}</p>
-                                      <p className="mt-1 text-sm text-slate-500">
+                                      <p className="font-medium text-white">{item.name}</p>
+                                      <p className="mt-1 text-sm text-white/40">
                                         Qty {item.quantity} · {money(item.unitPriceNgn, "NGN")} each
                                       </p>
-                                      <p className="mt-2 text-sm font-semibold text-slate-900">
+                                      <p className="mt-2 text-sm font-semibold text-white">
                                         {money(item.lineTotalNgn, "NGN")}
                                       </p>
                                     </div>
                                   ))}
                                 </div>
                               </div>
-                              <div className="rounded-[22px] border border-slate-200 bg-white p-4">
-                                <p className="text-sm font-semibold text-blue-600">Shipping address</p>
-                                <p className="mt-3 text-sm leading-7 text-slate-600">
+                              <div className="rounded-xl border border-white/10 bg-white/[0.03] p-4">
+                                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-white/40">Shipping address</p>
+                                <p className="mt-3 text-sm leading-7 text-white/75">
                                   {order.shippingAddress}
                                 </p>
                               </div>
-                              <div className="rounded-[22px] border border-slate-200 bg-white p-4">
-                                <p className="text-sm font-semibold text-blue-600">Payment details</p>
-                                <dl className="mt-3 space-y-3 text-sm text-slate-600">
+                              <div className="rounded-xl border border-white/10 bg-white/[0.03] p-4">
+                                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-white/40">Payment details</p>
+                                <dl className="mt-3 space-y-3 text-sm text-white/60">
                                   <div className="flex items-center justify-between gap-4">
                                     <dt>Method</dt>
-                                    <dd className="font-semibold text-slate-900">{order.paymentMethod}</dd>
+                                    <dd className="font-semibold text-white">{order.paymentMethod}</dd>
                                   </div>
                                   <div className="flex items-center justify-between gap-4">
                                     <dt>Paystack ref</dt>
-                                    <dd className="truncate text-right font-semibold text-slate-900">
+                                    <dd className="truncate text-right font-mono text-xs font-semibold text-blue-400">
                                       {order.paystackReference}
                                     </dd>
                                   </div>
@@ -1307,10 +1444,10 @@ export function AdminPortalPage() {
                     })}
                   </div>
 
-                  <div className="mt-6 hidden overflow-hidden rounded-[28px] border border-slate-200 md:block">
-                    <div className="overflow-x-auto">
+                  <div className="mt-6 hidden overflow-hidden rounded-2xl border border-white/10 md:block">
+                    <div className="overflow-x-auto scrollbar-thin scrollbar-track-transparent scrollbar-thumb-white/10">
                     <table className="min-w-full text-sm">
-                      <thead className="bg-slate-50 text-left text-xs uppercase tracking-[0.24em] text-slate-500">
+                      <thead className="bg-white/5 text-left text-xs uppercase tracking-[0.24em] text-white/40">
                         <tr>
                           <th className="px-4 py-4">Order Ref</th>
                           <th className="px-4 py-4">Customer</th>
@@ -1322,7 +1459,7 @@ export function AdminPortalPage() {
                         </tr>
                       </thead>
                       <tbody>
-                        {orders.map((order) => {
+                        {filteredOrders.map((order) => {
                           const expanded = expandedOrderId === order.id;
                           return (
                             <Fragment key={order.id}>
@@ -1332,39 +1469,39 @@ export function AdminPortalPage() {
                                     current === order.id ? "" : order.id,
                                   )
                                 }
-                                className="cursor-pointer border-t border-slate-200 bg-white transition hover:bg-slate-50"
+                                className="cursor-pointer border-t border-white/5 transition hover:bg-white/5"
                               >
-                                <td className="px-4 py-4 font-semibold text-slate-950">
+                                <td className="px-4 py-4 font-semibold text-blue-400">
                                   <div className="flex items-center gap-3">
-                                    <span>{order.reference}</span>
+                                    <span className="font-mono text-xs">{order.reference}</span>
                                     {expanded ? (
-                                      <ChevronUp className="h-4 w-4 text-slate-400" />
+                                      <ChevronUp className="h-4 w-4 text-white/30" />
                                     ) : (
-                                      <ChevronDown className="h-4 w-4 text-slate-400" />
+                                      <ChevronDown className="h-4 w-4 text-white/30" />
                                     )}
                                   </div>
                                 </td>
                                 <td className="px-4 py-4">
-                                  <p className="font-medium text-slate-900">{order.customerName}</p>
-                                  <p className="mt-1 text-xs text-slate-500">{order.customerEmail}</p>
+                                  <p className="font-medium text-white">{order.customerName}</p>
+                                  <p className="mt-1 text-xs text-white/40">{order.customerEmail}</p>
                                 </td>
-                                <td className="max-w-[260px] px-4 py-4 text-slate-600">
+                                <td className="max-w-[260px] px-4 py-4 text-white/60">
                                   <span className="line-clamp-2">{order.itemsSummary}</span>
                                 </td>
-                                <td className="px-4 py-4 font-semibold text-slate-900">
+                                <td className="px-4 py-4 font-semibold text-white">
                                   {money(order.totalNgn, "NGN")}
                                 </td>
                                 <td className="px-4 py-4">
                                   <span
                                     className={clsx(
-                                      "inline-flex rounded-full px-3 py-1 text-xs font-semibold ring-1 ring-inset",
+                                      "inline-flex rounded-full px-3 py-1 text-xs font-semibold",
                                       statusTone(order.status),
                                     )}
                                   >
                                     {statusLabel(order.status)}
                                   </span>
                                 </td>
-                                <td className="px-4 py-4 text-slate-500">{formatDate(order.createdAt)}</td>
+                                <td className="px-4 py-4 text-white/40">{formatDate(order.createdAt)}</td>
                                 <td
                                   className="px-4 py-4"
                                   onClick={(event) => event.stopPropagation()}
@@ -1385,7 +1522,7 @@ export function AdminPortalPage() {
                                       type="button"
                                       onClick={() => persistOrderStatus(order.id)}
                                       disabled={orderSavingId === order.id}
-                                      className="rounded-full bg-slate-950 px-4 py-2 text-xs font-semibold uppercase tracking-[0.24em] text-white transition hover:bg-slate-800 disabled:opacity-60"
+                                      className="rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 px-4 py-2 text-xs font-semibold uppercase tracking-[0.24em] text-white transition hover:from-blue-500 hover:to-purple-500 disabled:opacity-60"
                                     >
                                       <LoadingInlineLabel
                                         loading={orderSavingId === order.id}
@@ -1398,26 +1535,26 @@ export function AdminPortalPage() {
                                 </td>
                               </tr>
                               {expanded ? (
-                                <tr className="border-t border-slate-100 bg-slate-50">
+                                <tr className="border-t border-white/10 bg-white/[0.03]">
                                   <td colSpan={7} className="px-5 py-5">
                                     <div className="grid gap-5 lg:grid-cols-[1.2fr_0.8fr]">
-                                      <div className="rounded-[24px] border border-slate-200 bg-white p-5">
-                                        <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-600">
+                                      <div className="rounded-2xl border border-white/10 bg-[#0f172a] p-5">
+                                        <p className="text-xs font-semibold uppercase tracking-[0.24em] text-white/40">
                                           Item breakdown
                                         </p>
                                         <div className="mt-4 space-y-3">
                                           {order.items.map((item) => (
                                             <div
                                               key={item.id}
-                                              className="flex items-center justify-between gap-3 rounded-[18px] border border-slate-100 bg-slate-50 px-4 py-3"
+                                              className="flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3"
                                             >
                                               <div>
-                                                <p className="font-medium text-slate-900">{item.name}</p>
-                                                <p className="text-xs text-slate-500">
+                                                <p className="font-medium text-white">{item.name}</p>
+                                                <p className="text-xs text-white/40">
                                                   Qty {item.quantity} · {money(item.unitPriceNgn, "NGN")} each
                                                 </p>
                                               </div>
-                                              <p className="font-semibold text-slate-900">
+                                              <p className="font-semibold text-white">
                                                 {money(item.lineTotalNgn, "NGN")}
                                               </p>
                                             </div>
@@ -1425,26 +1562,26 @@ export function AdminPortalPage() {
                                         </div>
                                       </div>
                                       <div className="space-y-4">
-                                        <div className="rounded-[24px] border border-slate-200 bg-white p-5">
-                                          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-600">
+                                        <div className="rounded-2xl border border-white/10 bg-[#0f172a] p-5">
+                                          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-white/40">
                                             Shipping address
                                           </p>
-                                          <p className="mt-3 text-sm leading-7 text-slate-600">
+                                          <p className="mt-3 text-sm leading-7 text-white/75">
                                             {order.shippingAddress}
                                           </p>
                                         </div>
-                                        <div className="rounded-[24px] border border-slate-200 bg-white p-5">
-                                          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-600">
+                                        <div className="rounded-2xl border border-white/10 bg-[#0f172a] p-5">
+                                          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-white/40">
                                             Payment details
                                           </p>
-                                          <dl className="mt-3 space-y-3 text-sm text-slate-600">
+                                          <dl className="mt-3 space-y-3 text-sm text-white/60">
                                             <div className="flex items-center justify-between gap-4">
                                               <dt>Method</dt>
-                                              <dd className="font-semibold text-slate-900">{order.paymentMethod}</dd>
+                                              <dd className="font-semibold text-white">{order.paymentMethod}</dd>
                                             </div>
                                             <div className="flex items-center justify-between gap-4">
                                               <dt>Paystack ref</dt>
-                                              <dd className="font-semibold text-slate-900">
+                                              <dd className="font-mono text-xs font-semibold text-blue-400">
                                                 {order.paystackReference}
                                               </dd>
                                             </div>
@@ -1468,182 +1605,338 @@ export function AdminPortalPage() {
           </Tabs.Content>
 
           <Tabs.Content value="products" className="space-y-5">
-            <PortalCard className="bg-white">
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <div>
-                  <p className="text-sm font-semibold uppercase tracking-[0.2em] text-blue-600 md:text-xs md:tracking-[0.28em]">
-                    Products
-                  </p>
-                  <h2 className="mt-2 font-['Sora'] text-2xl font-semibold text-slate-950">
-                    Catalog manager
-                  </h2>
-                </div>
-                <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
-                  <button
-                    type="button"
-                    onClick={() => loadProducts()}
-                    disabled={productsLoading}
-                    className="inline-flex min-h-11 items-center justify-center rounded-full border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-900 transition hover:border-blue-200 hover:bg-blue-50 disabled:opacity-60"
-                  >
-                    <LoadingInlineLabel
-                      loading={productsLoading}
-                      idleLabel="Refresh"
-                      loadingLabel="Refreshing..."
-                      minWidthClass="min-w-[128px]"
+            <PortalCard>
+              <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+                <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.28em] text-white/35">
+                      Exchange rate
+                    </p>
+                    <p className="mt-2 text-sm text-white/55">
+                      Update the NGN preview baseline used throughout the product manager.
+                    </p>
+                  </div>
+                  <form onSubmit={saveExchangeRate} className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
+                    <TextInput
+                      type="number"
+                      min="1"
+                      step="0.01"
+                      value={exchangeRateDraft}
+                      onChange={(event) => setExchangeRateDraft(event.target.value)}
+                      className="sm:min-w-[220px]"
                     />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={openCreateProduct}
-                    className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-slate-950 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800"
-                  >
-                    <Plus className="h-4 w-4" />
-                    Add Product
-                  </button>
+                    <button
+                      type="submit"
+                      disabled={exchangeSaving}
+                      className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 px-5 text-sm font-semibold text-white transition hover:from-blue-500 hover:to-purple-500 disabled:opacity-60"
+                    >
+                      {exchangeSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <BadgeDollarSign className="h-4 w-4" />}
+                      <LoadingInlineLabel
+                        loading={exchangeSaving}
+                        idleLabel="Save Rate"
+                        loadingLabel="Saving..."
+                        minWidthClass="min-w-[110px]"
+                      />
+                    </button>
+                  </form>
                 </div>
               </div>
 
-              {!products.length ? (
-                <div className="mt-8 rounded-[28px] border border-dashed border-slate-200 bg-slate-50 px-6 py-14 text-center">
-                  <ShoppingBag className="mx-auto h-9 w-9 text-slate-300" />
-                  <h3 className="mt-4 font-['Sora'] text-2xl font-semibold text-slate-900">
+              <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.28em] text-white/35">
+                    Products
+                  </p>
+                  <h2 className="mt-2 font-['Sora'] text-2xl font-semibold text-white">
+                    Catalog manager
+                  </h2>
+                </div>
+                <p className="text-sm text-white/30">{filteredProducts.length} products</p>
+              </div>
+
+              <div className="mt-6 rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+                <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+                  <div className="flex flex-1 flex-col gap-4 lg:flex-row">
+                    <div className="relative w-full lg:max-w-md">
+                      <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-white/30" />
+                      <TextInput
+                        value={productSearch}
+                        onChange={(event) => setProductSearch(event.target.value)}
+                        placeholder="Search by name, brand, or description"
+                        className="pl-11"
+                      />
+                    </div>
+                    <div className="-mx-1 flex flex-wrap gap-2 overflow-x-auto px-1">
+                      {[{ value: "all", label: "All" }, ...PRODUCT_CATEGORY_OPTIONS].map((option) => (
+                        <button
+                          key={option.value}
+                          type="button"
+                          onClick={() => setProductCategoryFilter(option.value)}
+                          className={clsx(
+                            "rounded-full border px-4 py-2 text-sm transition",
+                            productCategoryFilter === option.value
+                              ? "border-transparent bg-gradient-to-r from-blue-600 to-purple-600 text-white"
+                              : "border-white/15 text-white/50 hover:border-blue-500/50 hover:text-blue-400",
+                          )}
+                        >
+                          {option.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
+                    <button
+                      type="button"
+                      onClick={() => loadProducts()}
+                      disabled={productsLoading}
+                      className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-white/10 px-4 py-2.5 text-sm font-semibold text-white/60 transition hover:bg-white/5 hover:text-white disabled:opacity-60"
+                    >
+                      {productsLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Activity className="h-4 w-4" />}
+                      <LoadingInlineLabel
+                        loading={productsLoading}
+                        idleLabel="Refresh"
+                        loadingLabel="Refreshing..."
+                        minWidthClass="min-w-[108px]"
+                      />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={openCreateProduct}
+                      className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:from-blue-500 hover:to-purple-500"
+                    >
+                      <Plus className="h-4 w-4" />
+                      Add Product
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {!filteredProducts.length ? (
+                <div className="mt-8 rounded-2xl border border-white/10 bg-[#111827] px-6 py-14 text-center">
+                  <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-white/5">
+                    <ShoppingBag className="h-7 w-7 text-white/20" />
+                  </div>
+                  <h3 className="mt-4 font-['Sora'] text-2xl font-semibold text-white">
                     No products loaded
                   </h3>
-                  <p className="mt-3 text-sm leading-7 text-slate-500">
-                    Create your first catalog entry or connect the backend product list to this
-                    portal.
+                  <p className="mt-3 text-sm leading-7 text-white/30">
+                    Create your first catalog entry or adjust the current category and search filters.
                   </p>
                 </div>
               ) : (
-                <div className="mt-6 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-                  {products.map((product) => (
-                    <article
-                      key={product.id}
-                      className="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-[0_16px_40px_rgba(15,23,42,0.08)]"
-                    >
-                      <div className="relative aspect-[4/3] overflow-hidden bg-slate-100">
-                        {product.imageUrl ? (
-                          <img
-                            src={product.imageUrl}
-                            alt={product.name}
-                            className="h-full w-full object-cover"
-                          />
-                        ) : (
-                          <div className="flex h-full items-center justify-center text-slate-400">
-                            No image
+                <>
+                  <div className="mt-6 grid gap-4 md:hidden">
+                    {filteredProducts.map((product) => (
+                      <article key={product.id} className="rounded-2xl border border-white/10 bg-[#111827] p-4">
+                        <div className="flex gap-4">
+                          <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-white/10 bg-white/5">
+                            {product.imageUrl ? (
+                              <img src={product.imageUrl} alt={product.name} className="h-full w-full object-cover" />
+                            ) : (
+                              <ImageIcon className="h-5 w-5 text-white/20" />
+                            )}
                           </div>
-                        )}
-                        <span className="absolute left-4 top-4 rounded-full bg-white/92 px-3 py-1 text-xs font-semibold text-slate-900 shadow">
-                          {product.condition}
-                        </span>
-                      </div>
-                      <div className="space-y-4 p-5">
-                        <div className="flex items-start justify-between gap-3">
-                          <div>
-                            <p className="text-xs font-semibold uppercase tracking-[0.26em] text-blue-600">
-                              {PRODUCT_CATEGORY_OPTIONS.find((option) => option.value === product.category)
-                                ?.label || product.category}
-                            </p>
-                            <h3 className="mt-2 font-['Sora'] text-xl font-semibold text-slate-950">
-                              {product.name}
-                            </h3>
-                            <p className="mt-1 text-sm text-slate-500">{product.brand}</p>
-                          </div>
-                          <div className="flex gap-2">
-                            <button
-                              type="button"
-                              onClick={() => openEditProduct(product)}
-                              className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"
-                            >
-                              <Pencil className="h-4 w-4" />
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => setDeleteTarget(product)}
-                              className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 transition hover:border-rose-200 hover:bg-rose-50 hover:text-rose-700"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </button>
+                          <div className="min-w-0 flex-1">
+                            <p className="text-lg font-medium text-white">{product.name}</p>
+                            <p className="mt-1 text-sm text-white/40">{product.brand}</p>
+                            <div className="mt-3 flex flex-wrap gap-2">
+                              <span className="rounded-full bg-white/10 px-2.5 py-1 text-xs text-white/60">
+                                {PRODUCT_CATEGORY_OPTIONS.find((option) => option.value === product.category)?.label || product.category}
+                              </span>
+                              <span className={clsx("rounded-full px-2.5 py-1 text-xs", conditionTone(product.condition))}>
+                                {product.condition}
+                              </span>
+                            </div>
                           </div>
                         </div>
-
-                        <p className="text-sm leading-7 text-slate-600">{product.description}</p>
-
-                        <div className="grid gap-3 rounded-[22px] bg-slate-50 p-4 sm:grid-cols-2">
+                        <div className="mt-4 grid grid-cols-2 gap-3 rounded-xl border border-white/10 bg-white/[0.03] p-4 text-sm">
                           <div>
-                            <p className="text-xs uppercase tracking-[0.24em] text-slate-500">USD</p>
-                            <p className="mt-2 font-semibold text-slate-950">
-                              {money(product.priceUsd, "USD")}
-                            </p>
+                            <p className="text-xs uppercase tracking-[0.24em] text-white/35">NGN</p>
+                            <p className="mt-2 font-semibold text-white">{money(product.priceNgn, "NGN")}</p>
                           </div>
                           <div>
-                            <p className="text-xs uppercase tracking-[0.24em] text-slate-500">NGN preview</p>
-                            <p className="mt-2 font-semibold text-slate-950">
-                              {money(product.priceUsd * shippingSettings.exchangeRateNgnUsd, "NGN")}
-                            </p>
+                            <p className="text-xs uppercase tracking-[0.24em] text-white/35">USD</p>
+                            <p className="mt-2 font-semibold text-white/70">{money(product.priceUsd, "USD")}</p>
                           </div>
                           <div>
-                            <p className="text-xs uppercase tracking-[0.24em] text-slate-500">Stock</p>
-                            <p className="mt-2 font-semibold text-slate-950">{product.stock}</p>
+                            <p className="text-xs uppercase tracking-[0.24em] text-white/35">Stock</p>
+                            <p className="mt-2 font-semibold text-white">{product.stock}</p>
                           </div>
                           <div>
-                            <p className="text-xs uppercase tracking-[0.24em] text-slate-500">Extras</p>
-                            <p className="mt-2 font-semibold text-slate-950">
-                              {product.extraImageUrls.length} additional images
-                            </p>
+                            <p className="text-xs uppercase tracking-[0.24em] text-white/35">Extras</p>
+                            <p className="mt-2 font-semibold text-white">{product.extraImageUrls.length}</p>
                           </div>
                         </div>
-                      </div>
-                    </article>
-                  ))}
-                </div>
+                        <div className="mt-4 flex gap-2">
+                          <button
+                            type="button"
+                            onClick={() => openEditProduct(product)}
+                            className="inline-flex h-11 w-11 items-center justify-center rounded-lg text-blue-400 transition hover:bg-blue-500/10 hover:text-blue-300"
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setDeleteTarget(product)}
+                            className="inline-flex h-11 w-11 items-center justify-center rounded-lg text-rose-400/70 transition hover:bg-rose-500/10 hover:text-rose-400"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </div>
+                      </article>
+                    ))}
+                  </div>
+
+                  <div className="mt-6 hidden overflow-hidden rounded-2xl border border-white/10 md:block">
+                    <div className="overflow-x-auto scrollbar-thin scrollbar-track-transparent scrollbar-thumb-white/10">
+                      <table className="min-w-full text-sm">
+                        <thead className="bg-white/5 text-left text-xs uppercase tracking-[0.24em] text-white/40">
+                          <tr>
+                            <th className="px-4 py-4">Product</th>
+                            <th className="px-4 py-4">Category</th>
+                            <th className="px-4 py-4">Condition</th>
+                            <th className="px-4 py-4">Price</th>
+                            <th className="px-4 py-4">Stock</th>
+                            <th className="px-4 py-4 text-right">Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {filteredProducts.map((product) => (
+                            <tr key={product.id} className="border-t border-white/5 transition hover:bg-white/5">
+                              <td className="px-4 py-4">
+                                <div className="flex items-center gap-3">
+                                  <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-white/10 bg-white/5">
+                                    {product.imageUrl ? (
+                                      <img src={product.imageUrl} alt={product.name} className="h-full w-full object-cover" />
+                                    ) : (
+                                      <ImageIcon className="h-4 w-4 text-white/20" />
+                                    )}
+                                  </div>
+                                  <div>
+                                    <p className="font-medium text-white">{product.name}</p>
+                                    <p className="mt-1 text-xs text-white/40">{product.brand}</p>
+                                  </div>
+                                </div>
+                              </td>
+                              <td className="px-4 py-4">
+                                <span className="rounded-full bg-white/10 px-2.5 py-1 text-xs text-white/60">
+                                  {PRODUCT_CATEGORY_OPTIONS.find((option) => option.value === product.category)?.label || product.category}
+                                </span>
+                              </td>
+                              <td className="px-4 py-4">
+                                <span className={clsx("rounded-full px-2.5 py-1 text-xs", conditionTone(product.condition))}>
+                                  {product.condition}
+                                </span>
+                              </td>
+                              <td className="px-4 py-4">
+                                <p className="font-semibold text-white">{money(product.priceNgn, "NGN")}</p>
+                                <p className="mt-1 text-xs text-white/40">{money(product.priceUsd, "USD")}</p>
+                              </td>
+                              <td className="px-4 py-4 font-semibold text-white">{product.stock}</td>
+                              <td className="px-4 py-4">
+                                <div className="flex justify-end gap-1">
+                                  <button
+                                    type="button"
+                                    onClick={() => openEditProduct(product)}
+                                    className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-blue-400 transition hover:bg-blue-500/10 hover:text-blue-300"
+                                  >
+                                    <Pencil className="h-4 w-4" />
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => setDeleteTarget(product)}
+                                    className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-rose-400/70 transition hover:bg-rose-500/10 hover:text-rose-400"
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </>
               )}
             </PortalCard>
           </Tabs.Content>
 
           <Tabs.Content value="shipping" className="space-y-5">
             <div className="grid gap-5 xl:grid-cols-[0.95fr_1.05fr]">
-              <PortalCard className="bg-white">
-                <p className="text-sm font-semibold uppercase tracking-[0.2em] text-blue-600 md:text-xs md:tracking-[0.28em]">
+              <PortalCard>
+                <p className="text-xs font-semibold uppercase tracking-[0.28em] text-white/35">
                   Current settings
                 </p>
-                <h2 className="mt-2 font-['Sora'] text-2xl font-semibold text-slate-950">
+                <h2 className="mt-2 font-['Sora'] text-2xl font-semibold text-white">
                   Shipping configuration
                 </h2>
                 <div className="mt-6 space-y-4">
-                  <div className="rounded-[24px] bg-slate-50 p-5">
-                    <p className="text-xs uppercase tracking-[0.24em] text-slate-500">Mode</p>
-                    <p className="mt-2 font-semibold text-slate-950">
+                  <div className="rounded-xl border border-white/10 bg-white/[0.03] p-5">
+                    <p className="text-xs uppercase tracking-[0.24em] text-white/35">Mode</p>
+                    <p className="mt-2 font-semibold text-white">
                       {SHIPPING_MODE_OPTIONS.find((option) => option.value === shippingSettings.mode)
                         ?.label || shippingSettings.mode}
                     </p>
                   </div>
-                  <div className="rounded-[24px] bg-slate-50 p-5">
-                    <p className="text-xs uppercase tracking-[0.24em] text-slate-500">Value</p>
-                    <p className="mt-2 font-semibold text-slate-950">
+                  <div className="rounded-xl border border-white/10 bg-white/[0.03] p-5">
+                    <p className="text-xs uppercase tracking-[0.24em] text-white/35">Value</p>
+                    <p className="mt-2 font-semibold text-white">
                       {shippingSettings.mode === "percentage"
                         ? `${shippingSettings.value}%`
                         : money(shippingSettings.value, "NGN")}
                     </p>
                   </div>
-                  <div className="rounded-[24px] bg-slate-50 p-5">
-                    <p className="text-xs uppercase tracking-[0.24em] text-slate-500">
+                  <div className="rounded-xl border border-white/10 bg-white/[0.03] p-5">
+                    <p className="text-xs uppercase tracking-[0.24em] text-white/35">
                       Free threshold
                     </p>
-                    <p className="mt-2 font-semibold text-slate-950">
+                    <p className="mt-2 font-semibold text-white">
                       {shippingSettings.freeThresholdEnabled
                         ? money(shippingSettings.freeThreshold, "NGN")
                         : "Disabled"}
                     </p>
                   </div>
                 </div>
+
+                <div className="mt-6 rounded-2xl border border-white/10 bg-white/[0.03]">
+                  <div className="border-b border-white/10 bg-white/5 px-5 py-4">
+                    <p className="text-xs uppercase tracking-[0.24em] text-white/35">Live preview</p>
+                  </div>
+                  <div className="overflow-x-auto scrollbar-thin scrollbar-track-transparent scrollbar-thumb-white/10">
+                    <table className="min-w-full text-sm">
+                      <thead className="text-left text-xs uppercase tracking-[0.24em] text-white/40">
+                        <tr>
+                          <th className="px-5 py-4">Subtotal</th>
+                          <th className="px-5 py-4">Shipping</th>
+                          <th className="px-5 py-4">Total</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {shippingPreviewRows.map((row) => (
+                          <tr key={row.subtotal} className="border-t border-white/5 hover:bg-white/5">
+                            <td className="px-5 py-4 text-white/70">{money(row.subtotal, "NGN")}</td>
+                            <td className="px-5 py-4">
+                              {row.shipping === 0 ? (
+                                <span className="font-medium text-emerald-400">FREE</span>
+                              ) : (
+                                <span className="text-amber-300">{money(row.shipping, "NGN")}</span>
+                              )}
+                            </td>
+                            <td className="px-5 py-4 font-semibold text-white">{money(row.total, "NGN")}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
               </PortalCard>
 
-              <PortalCard className="bg-white">
-                <p className="text-sm font-semibold uppercase tracking-[0.2em] text-blue-600 md:text-xs md:tracking-[0.28em]">
+              <PortalCard>
+                <p className="text-xs font-semibold uppercase tracking-[0.28em] text-white/35">
                   Shipping editor
                 </p>
-                <h2 className="mt-2 font-['Sora'] text-2xl font-semibold text-slate-950">
+                <h2 className="mt-2 font-['Sora'] text-2xl font-semibold text-white">
                   Update fees and thresholds
                 </h2>
                 <form onSubmit={saveShippingSettings} className="mt-6 space-y-6">
@@ -1656,14 +1949,25 @@ export function AdminPortalPage() {
                           setShippingDraft((current) => ({ ...current, mode: option.value }))
                         }
                         className={clsx(
-                          "min-h-11 rounded-[22px] border px-4 py-4 text-left transition",
+                          "min-h-11 rounded-xl border px-4 py-4 text-left transition",
                           shippingDraft.mode === option.value
-                            ? "border-blue-200 bg-blue-50"
-                            : "border-slate-200 bg-white hover:border-slate-300",
+                            ? "border-blue-500/50 bg-blue-500/10"
+                            : "border-white/10 bg-white/[0.03] hover:border-white/20",
                         )}
                       >
-                        <p className="font-semibold text-slate-950">{option.label}</p>
-                        <p className="mt-2 text-xs leading-6 text-slate-500">
+                        <div className="flex items-center gap-2">
+                          <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-white/5">
+                            {option.value === "flat" ? (
+                              <DollarSign className="h-4 w-4 text-emerald-400" />
+                            ) : option.value === "percentage" ? (
+                              <Percent className="h-4 w-4 text-blue-400" />
+                            ) : (
+                              <GitMerge className="h-4 w-4 text-purple-400" />
+                            )}
+                          </span>
+                          <p className="font-semibold text-white">{option.label}</p>
+                        </div>
+                        <p className="mt-2 text-xs leading-6 text-white/40">
                           {option.value === "flat"
                             ? "Fixed NGN fee per order."
                             : option.value === "percentage"
@@ -1700,7 +2004,7 @@ export function AdminPortalPage() {
                     />
                   </Field>
 
-                  <label className="flex items-center gap-3 rounded-[22px] border border-slate-200 bg-slate-50 px-4 py-4">
+                  <label className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/[0.03] px-4 py-4">
                     <input
                       type="checkbox"
                       checked={shippingDraft.freeThresholdEnabled}
@@ -1712,7 +2016,7 @@ export function AdminPortalPage() {
                       }
                       className="h-4 w-4 accent-blue-600"
                     />
-                    <span className="text-sm font-medium text-slate-700">
+                    <span className="text-sm font-medium text-white/70">
                       Enable free shipping threshold
                     </span>
                   </label>
@@ -1734,12 +2038,31 @@ export function AdminPortalPage() {
                     </Field>
                   ) : null}
 
+                  <div className="rounded-xl border border-blue-500/20 bg-blue-500/10 p-4">
+                    <div className="flex items-start gap-3">
+                      <Info className="mt-0.5 h-4 w-4 text-blue-400" />
+                      <div>
+                        <p className="font-medium text-blue-300">Formula preview</p>
+                        <p className="mt-2 font-mono text-xs text-blue-200/80">
+                          {shippingDraft.mode === "percentage"
+                            ? "shipping = subtotal * (rate / 100)"
+                            : "shipping = flat fee until free threshold applies"}
+                        </p>
+                        {shippingDraft.freeThresholdEnabled ? (
+                          <p className="mt-2 text-xs text-emerald-400">
+                            Free shipping activates at {money(toNumber(shippingDraft.freeThreshold, 0), "NGN")}
+                          </p>
+                        ) : null}
+                      </div>
+                    </div>
+                  </div>
+
                   <button
                     type="submit"
                     disabled={shippingSaving}
-                    className="inline-flex min-h-11 items-center gap-2 rounded-full bg-slate-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:opacity-60"
+                    className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 px-5 text-sm font-semibold text-white transition hover:from-blue-500 hover:to-purple-500 disabled:opacity-60"
                   >
-                    {shippingSaving ? null : <Truck className="h-4 w-4" />}
+                    {shippingSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Truck className="h-4 w-4" />}
                     <LoadingInlineLabel
                       loading={shippingSaving}
                       idleLabel="Save Settings"
@@ -1749,14 +2072,14 @@ export function AdminPortalPage() {
                   </button>
                 </form>
 
-                <div className="mt-10 rounded-[28px] border border-slate-200 bg-slate-50 p-6">
-                  <p className="text-xs font-semibold uppercase tracking-[0.28em] text-blue-600">
+                <div className="mt-10 rounded-2xl border border-white/10 bg-white/[0.03] p-6">
+                  <p className="text-xs font-semibold uppercase tracking-[0.28em] text-blue-300">
                     Exchange rate manager
                   </p>
-                  <h3 className="mt-2 font-['Sora'] text-xl font-semibold text-slate-950">
+                  <h3 className="mt-2 font-['Sora'] text-xl font-semibold text-white">
                     Current NGN / USD rate
                   </h3>
-                  <p className="mt-3 text-sm leading-7 text-slate-500">
+                  <p className="mt-3 text-sm leading-7 text-white/40">
                     This controls NGN previews shown across the admin portal.
                   </p>
                   <form onSubmit={saveExchangeRate} className="mt-5 flex flex-col gap-3 sm:flex-row">
@@ -1770,9 +2093,9 @@ export function AdminPortalPage() {
                     <button
                       type="submit"
                       disabled={exchangeSaving}
-                      className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-semibold text-slate-950 shadow-sm transition hover:bg-blue-50 disabled:opacity-60"
+                      className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 px-5 py-3 text-sm font-semibold text-white transition hover:from-blue-500 hover:to-purple-500 disabled:opacity-60"
                     >
-                      {exchangeSaving ? null : <BadgeDollarSign className="h-4 w-4 text-blue-600" />}
+                      {exchangeSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <BadgeDollarSign className="h-4 w-4" />}
                       <LoadingInlineLabel
                         loading={exchangeSaving}
                         idleLabel="Update Rate"
@@ -1790,18 +2113,18 @@ export function AdminPortalPage() {
 
       <Dialog.Root open={productDialogOpen} onOpenChange={setProductDialogOpen}>
         <Dialog.Portal>
-          <Dialog.Overlay className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm" />
-          <Dialog.Content className="fixed inset-0 z-50 h-full w-full overflow-y-auto bg-[linear-gradient(180deg,#f8fbff_0%,#eef3ff_100%)] p-4 shadow-2xl sm:right-0 sm:left-auto sm:top-0 sm:max-w-3xl sm:border-l sm:border-white/10 sm:p-6 md:p-8">
+          <Dialog.Overlay className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm" />
+          <Dialog.Content className="fixed inset-0 z-50 h-full w-full overflow-y-auto bg-[#111827] p-4 text-white shadow-2xl sm:right-0 sm:left-auto sm:top-0 sm:max-w-3xl sm:border-l sm:border-white/10 sm:p-6 md:p-8">
             <div className="flex items-start justify-between gap-4">
               <div>
-                <p className="text-sm font-semibold uppercase tracking-[0.2em] text-blue-600 md:text-xs md:tracking-[0.28em]">
+                <p className="text-xs font-semibold uppercase tracking-[0.28em] text-white/35">
                   {productForm.id ? "Edit product" : "Add product"}
                 </p>
-                <Dialog.Title className="mt-2 font-['Sora'] text-2xl font-semibold text-slate-950 md:text-3xl">
+                <Dialog.Title className="mt-2 font-['Sora'] text-2xl font-semibold text-white md:text-3xl">
                   {productForm.id ? "Update catalog entry" : "Create new catalog entry"}
                 </Dialog.Title>
               </div>
-              <Dialog.Close className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 transition hover:border-slate-300 hover:bg-slate-50">
+              <Dialog.Close className="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-white/60 transition hover:bg-white/10 hover:text-white">
                 <X className="h-5 w-5" />
               </Dialog.Close>
             </div>
@@ -1872,15 +2195,15 @@ export function AdminPortalPage() {
                 </Field>
               </div>
 
-              <PortalCard className="border-slate-200 bg-white p-5">
+              <PortalCard className="border-white/10 bg-white/[0.03] p-5">
                 <div className="flex flex-wrap items-center justify-between gap-4">
                   <div>
-                    <p className="text-sm font-semibold text-slate-950">Primary image</p>
-                    <p className="mt-1 text-sm text-slate-500">
+                    <p className="text-sm font-semibold text-white">Primary image</p>
+                    <p className="mt-1 text-sm text-white/40">
                       Upload a file to the admin backend or paste a hosted URL.
                     </p>
                   </div>
-                  <label className="inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-full bg-slate-950 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800">
+                  <label className="inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:from-blue-500 hover:to-purple-500">
                     {uploadingImage ? null : <ImagePlus className="h-4 w-4" />}
                     <LoadingInlineLabel
                       loading={uploadingImage}
@@ -1893,7 +2216,7 @@ export function AdminPortalPage() {
                 </div>
 
                 <div className="mt-5 grid gap-5 md:grid-cols-[220px_1fr]">
-                  <div className="aspect-[4/3] overflow-hidden rounded-[24px] border border-slate-200 bg-slate-100">
+                  <div className="aspect-[4/3] overflow-hidden rounded-xl border border-white/10 bg-white/5">
                     {productForm.imageUrl ? (
                       <img
                         src={productForm.imageUrl}
@@ -1901,7 +2224,7 @@ export function AdminPortalPage() {
                         className="h-full w-full object-cover"
                       />
                     ) : (
-                      <div className="flex h-full items-center justify-center text-sm text-slate-400">
+                      <div className="flex h-full items-center justify-center text-sm text-white/25">
                         No preview yet
                       </div>
                     )}
@@ -1928,22 +2251,22 @@ export function AdminPortalPage() {
                 />
               </Field>
 
-              <div className="space-y-4 rounded-[28px] border border-slate-200 bg-white p-5">
+              <div className="space-y-4 rounded-2xl border border-white/10 bg-white/[0.03] p-5">
                 <div className="flex items-center justify-between gap-3">
                   <div>
-                    <p className="text-sm font-semibold text-slate-950">Additional image URLs</p>
-                    <p className="mt-1 text-sm text-slate-500">Add up to three extra image URLs.</p>
+                    <p className="text-sm font-semibold text-white">Additional image URLs</p>
+                    <p className="mt-1 text-sm text-white/40">Add up to three extra image URLs.</p>
                   </div>
                   {productForm.extraImageUrls.length < 3 ? (
                     <button
                       type="button"
                       onClick={() =>
                         setProductForm((current) => ({
-                          ...current,
-                          extraImageUrls: [...current.extraImageUrls, ""],
-                        }))
-                      }
-                      className="inline-flex min-h-11 items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-900 transition hover:border-blue-200 hover:bg-blue-50"
+                            ...current,
+                            extraImageUrls: [...current.extraImageUrls, ""],
+                          }))
+                        }
+                      className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-purple-500/25 bg-purple-500/15 px-4 py-2 text-sm font-semibold text-purple-300 transition hover:bg-purple-500/25"
                     >
                       <Plus className="h-4 w-4" />
                       Add field
@@ -1977,7 +2300,7 @@ export function AdminPortalPage() {
                                 : current.extraImageUrls.filter((_, itemIndex) => itemIndex !== index),
                           }))
                         }
-                        className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 transition hover:border-rose-200 hover:bg-rose-50 hover:text-rose-700"
+                        className="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-white/40 transition hover:border-rose-500/25 hover:bg-rose-500/10 hover:text-rose-300"
                       >
                         <Trash2 className="h-4 w-4" />
                       </button>
@@ -1986,8 +2309,8 @@ export function AdminPortalPage() {
                 </div>
               </div>
 
-              <div className="rounded-[28px] border border-slate-200 bg-slate-950 px-5 py-4 text-white">
-                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-300">
+              <div className="rounded-2xl border border-white/10 bg-[#0b0f1a] px-5 py-4 text-white">
+                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-300">
                   NGN preview
                 </p>
                 <p className="mt-3 text-3xl font-semibold">
@@ -1996,13 +2319,13 @@ export function AdminPortalPage() {
               </div>
 
               <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-                <Dialog.Close className="inline-flex min-h-11 items-center justify-center rounded-full border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-900 transition hover:bg-slate-50">
+                <Dialog.Close className="inline-flex min-h-11 items-center justify-center rounded-xl border border-white/10 bg-white/5 px-5 py-3 text-sm font-semibold text-white/70 transition hover:bg-white/10 hover:text-white">
                   Cancel
                 </Dialog.Close>
                 <button
                   type="submit"
                   disabled={savingProduct}
-                  className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-slate-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:opacity-60"
+                  className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 px-5 py-3 text-sm font-semibold text-white transition hover:from-blue-500 hover:to-purple-500 disabled:opacity-60"
                 >
                   {savingProduct ? null : <ShoppingBag className="h-4 w-4" />}
                   <LoadingInlineLabel
@@ -2020,24 +2343,24 @@ export function AdminPortalPage() {
 
       <Dialog.Root open={Boolean(deleteTarget)} onOpenChange={(open) => (!open ? setDeleteTarget(null) : null)}>
         <Dialog.Portal>
-          <Dialog.Overlay className="fixed inset-0 z-50 bg-slate-950/65 backdrop-blur-sm" />
-          <Dialog.Content className="fixed inset-x-0 bottom-0 z-50 rounded-t-[28px] bg-white p-6 shadow-2xl sm:left-1/2 sm:top-1/2 sm:w-[calc(100%-2rem)] sm:max-w-md sm:-translate-x-1/2 sm:-translate-y-1/2 sm:rounded-[28px]">
-            <Dialog.Title className="font-['Sora'] text-2xl font-semibold text-slate-950">
+          <Dialog.Overlay className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm" />
+          <Dialog.Content className="fixed inset-x-0 bottom-0 z-50 rounded-t-2xl border border-white/10 bg-[#111827] p-6 text-white shadow-2xl sm:left-1/2 sm:top-1/2 sm:w-[calc(100%-2rem)] sm:max-w-md sm:-translate-x-1/2 sm:-translate-y-1/2 sm:rounded-2xl">
+            <Dialog.Title className="font-['Sora'] text-2xl font-semibold text-white">
               Delete product?
             </Dialog.Title>
-            <p className="mt-3 text-sm leading-7 text-slate-600">
+            <p className="mt-3 text-sm leading-7 text-white/55">
               {deleteTarget?.name} will be removed from the admin product list. This action calls
               the live delete endpoint.
             </p>
             <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-              <Dialog.Close className="inline-flex min-h-11 items-center justify-center rounded-full border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-900 transition hover:bg-slate-50">
+              <Dialog.Close className="inline-flex min-h-11 items-center justify-center rounded-xl border border-white/10 bg-white/5 px-5 py-3 text-sm font-semibold text-white/70 transition hover:bg-white/10 hover:text-white">
                 Cancel
               </Dialog.Close>
               <button
                 type="button"
                 onClick={confirmDeleteProduct}
                 disabled={deleteSubmitting}
-                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-rose-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-rose-500 disabled:opacity-70"
+                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-rose-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-rose-500 disabled:opacity-70"
               >
                 {deleteSubmitting ? null : <Trash2 className="h-4 w-4" />}
                 <LoadingInlineLabel
