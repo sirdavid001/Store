@@ -1,0 +1,9 @@
+[project]
+name = "sirdavid-store"
+version = "0.1.0"
+description = "SirDavid Gadgets storefront"
+requires-python = ">=3.12,<3.13"
+dependencies = []
+
+[project.scripts]
+app = "api.wsgi:app"
