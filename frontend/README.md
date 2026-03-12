@@ -20,7 +20,7 @@ React + Vite storefront for SirDavid Gadgets, built with Tailwind CSS, React Rou
 
 - Dark premium storefront with category-led merchandising
 - Currency auto-detection with exchange-rate fallback support
-- Paystack hosted checkout handoff via `VITE_PAYSTACK_INIT_ENDPOINT`
+- Paystack hosted checkout handoff via `VITE_PAYSTACK_INIT_ENDPOINT` (defaults to `/payments/storefront/initialize/`)
 - Local admin portal for products, orders, shipping rules, and payment logs
 
 ## Commands

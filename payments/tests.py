@@ -9,7 +9,7 @@ from django.utils import timezone
 
 from catalog.models import Category, Product
 from orders.models import Order
-from payments.services import cache_checkout_payload
+from payments.services import cache_checkout_payload, get_checkout_payload
 
 
 class PaymentFlowTests(TestCase):
@@ -59,6 +59,67 @@ class PaymentFlowTests(TestCase):
 
         self.assertEqual(response.status_code, 302)
         self.assertEqual(Order.objects.count(), 0)
+
+    @mock.patch(
+        "payments.services.get_exchange_rates",
+        return_value={
+            "USD": Decimal("1"),
+            "NGN": Decimal("1500"),
+            "GHS": Decimal("15"),
+            "KES": Decimal("130"),
+            "ZAR": Decimal("19"),
+            "XOF": Decimal("610"),
+        },
+    )
+    @mock.patch("payments.views.PaystackClient")
+    def test_storefront_initialize_payment_returns_authorization_url(
+        self,
+        paystack_client,
+        _exchange_rates,
+    ):
+        paystack_client.return_value.initialize_transaction.return_value = {
+            "authorization_url": "https://paystack.example/storefront"
+        }
+
+        response = self.client.post(
+            reverse("payments:storefront-initialize"),
+            data=json.dumps(
+                {
+                    "customer": {
+                        "first_name": "Ada",
+                        "last_name": "Buyer",
+                        "email": "ada@example.com",
+                        "phone": "08000000000",
+                    },
+                    "address": {
+                        "address_line1": "1 Market Road",
+                        "address_line2": "Suite 2",
+                        "city": "Lagos",
+                        "state": "Lagos",
+                        "country": "Nigeria",
+                        "postal_code": "100001",
+                        "delivery_instructions": "Call on arrival",
+                    },
+                    "payment_method": "card",
+                    "display_currency": "USD",
+                    "items": [{"id": "iphone-16-pro-max", "quantity": 1}],
+                }
+            ),
+            content_type="application/json",
+        )
+
+        self.assertEqual(response.status_code, 200)
+        payload = response.json()
+        self.assertEqual(payload["authorization_url"], "https://paystack.example/storefront")
+        self.assertEqual(payload["currency"], "NGN")
+
+        cached_payload = get_checkout_payload(payload["reference"])
+        self.assertIsNotNone(cached_payload)
+        self.assertEqual(cached_payload["customer"]["email"], "ada@example.com")
+        self.assertEqual(cached_payload["cart"]["currency"], "NGN")
+        self.assertEqual(cached_payload["cart"]["items"][0]["product_id"], "iphone-16-pro-max")
+        paystack_client.return_value.initialize_transaction.assert_called_once()
+        cache.clear()
 
     @mock.patch("payments.views.PaystackClient")
     def test_verified_webhook_creates_order_and_reduces_stock(self, paystack_client):

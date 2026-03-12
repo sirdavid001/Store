@@ -32,6 +32,18 @@ def _deliver_email(subject_template, text_template, recipients, context, html_te
     message.send(fail_silently=False)
 
 
+def _resolve_order_item_product_id(item):
+    if item.get("catalog_product_id"):
+        return item["catalog_product_id"]
+
+    legacy_product_id = item.get("product_id")
+    if isinstance(legacy_product_id, int):
+        return legacy_product_id
+    if isinstance(legacy_product_id, str) and legacy_product_id.isdigit():
+        return int(legacy_product_id)
+    return None
+
+
 def send_order_notifications(order):
     context = {"order": order}
     _deliver_email(
@@ -71,7 +83,11 @@ def create_order_from_verified_payment(reference, checkout_payload, verification
     payment = checkout_payload["payment"]
     cart_snapshot = checkout_payload["cart"]
 
-    product_ids = [item["product_id"] for item in cart_snapshot["items"]]
+    product_ids = [
+        product_id
+        for item in cart_snapshot["items"]
+        if (product_id := _resolve_order_item_product_id(item)) is not None
+    ]
     products = Product.objects.select_for_update().filter(pk__in=product_ids, is_active=True)
     product_map = {product.pk: product for product in products}
 
@@ -111,14 +127,13 @@ def create_order_from_verified_payment(reference, checkout_payload, verification
 
     order_items = []
     for item in cart_snapshot["items"]:
-        product = product_map.get(item["product_id"])
-        if not product:
-            raise ValueError(f"Product {item['product_id']} was not found during checkout confirmation.")
-        if product.stock_quantity < item["quantity"]:
-            raise ValueError(f"Insufficient stock for {product.name}.")
+        product = product_map.get(_resolve_order_item_product_id(item))
+        if product:
+            if product.stock_quantity < item["quantity"]:
+                raise ValueError(f"Insufficient stock for {product.name}.")
 
-        product.stock_quantity -= item["quantity"]
-        product.save(update_fields=["stock_quantity", "updated_at"])
+            product.stock_quantity -= item["quantity"]
+            product.save(update_fields=["stock_quantity", "updated_at"])
 
         order_items.append(
             OrderItem(

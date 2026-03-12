@@ -48,6 +48,18 @@ const STORAGE_KEYS = {
   currency: "sirdavid-currency",
 };
 
+function getCookie(name) {
+  if (typeof document === "undefined") {
+    return "";
+  }
+
+  const target = document.cookie
+    .split(";")
+    .map((entry) => entry.trim())
+    .find((entry) => entry.startsWith(`${name}=`));
+  return target ? decodeURIComponent(target.slice(name.length + 1)) : "";
+}
+
 const StoreContext = createContext(null);
 
 function readStorage(key, fallback) {
@@ -335,67 +347,61 @@ export function StoreProvider({ children }) {
     setCart([]);
   }
 
-  async function beginHostedCheckout() {
+  async function beginHostedCheckout(checkoutDetails) {
     if (!cartLines.length) {
       toast.error("Your cart is empty.");
       return;
     }
 
-    const reference = `SDG-${Date.now()}`;
-    const baseLog = {
-      id: reference,
-      reference,
-      orderNumber: "Pending webhook confirmation",
-      status: "initialized",
-      channel: "card / bank / USSD / Apple Pay",
-      createdAt: new Date().toISOString(),
-      amountUsd: totalUsd,
-    };
-
-    setPaymentLogs((current) => [baseLog, ...current]);
-
-    const endpoint = import.meta.env.VITE_PAYSTACK_INIT_ENDPOINT;
-    if (!endpoint) {
-      toast.info(
-        "Hosted checkout hook is ready. Connect VITE_PAYSTACK_INIT_ENDPOINT to your backend so Paystack can initialize securely.",
-      );
-      return;
-    }
-
     try {
+      const endpoint =
+        import.meta.env.VITE_PAYSTACK_INIT_ENDPOINT || "/payments/storefront/initialize/";
       const response = await fetch(endpoint, {
         method: "POST",
+        credentials: "include",
         headers: {
           "Content-Type": "application/json",
+          "X-CSRFToken": getCookie("csrftoken"),
+          Accept: "application/json",
         },
         body: JSON.stringify({
-          reference,
-          currency: currentCurrency,
+          customer: checkoutDetails.customer,
+          address: checkoutDetails.address,
+          payment_method: checkoutDetails.paymentMethod,
+          display_currency: currentCurrency,
           items: cartLines.map((item) => ({
             id: item.id,
-            name: item.name,
             quantity: item.quantity,
-            priceUsd: item.priceUsd,
           })),
         }),
       });
 
+      const payload = await response.json().catch(() => ({}));
       if (!response.ok) {
-        throw new Error("checkout initialization failed");
+        throw new Error(payload.message || "checkout initialization failed");
       }
-
-      const payload = await response.json();
       const redirectUrl = payload.authorization_url ?? payload.data?.authorization_url;
 
       if (!redirectUrl) {
         throw new Error("missing authorization url");
       }
 
+      setPaymentLogs((current) => [
+        {
+          id: payload.reference,
+          reference: payload.reference,
+          orderNumber: "Pending webhook confirmation",
+          status: "initialized",
+          channel: checkoutDetails.paymentMethod,
+          createdAt: new Date().toISOString(),
+          amountUsd: totalUsd,
+        },
+        ...current,
+      ]);
+
       window.location.assign(redirectUrl);
-    } catch {
-      toast.error(
-        "Could not initialize Paystack checkout. Orders are only confirmed after a verified webhook event.",
-      );
+    } catch (error) {
+      toast.error(error.message || "Could not initialize Paystack checkout.");
     }
   }
 

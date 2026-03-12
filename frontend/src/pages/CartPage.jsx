@@ -1,7 +1,40 @@
 import { Minus, Plus, ShieldCheck, ShoppingBag, Trash2 } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 
+import { SelectField } from "../components/SelectField";
 import { useStore } from "../context/StoreContext";
+
+const CHECKOUT_PROFILE_KEY = "sirdavid-checkout-profile";
+const paymentMethodOptions = [
+  { value: "card", label: "Card" },
+  { value: "bank_transfer", label: "Bank Transfer" },
+  { value: "ussd", label: "USSD" },
+  { value: "apple_pay", label: "Apple Pay (Safari)" },
+];
+
+function inferDefaultPaymentMethod() {
+  if (typeof navigator === "undefined") {
+    return "card";
+  }
+
+  const normalized = navigator.userAgent.toLowerCase();
+  const appleDevice = ["iphone", "ipad", "macintosh"].some((token) => normalized.includes(token));
+  const safari = normalized.includes("safari") && !normalized.includes("chrome") && !normalized.includes("crios");
+  return appleDevice && safari ? "apple_pay" : "card";
+}
+
+function readCheckoutProfile() {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  try {
+    return JSON.parse(window.localStorage.getItem(CHECKOUT_PROFILE_KEY) || "null");
+  } catch {
+    return null;
+  }
+}
 
 export function CartPage() {
   const {
@@ -10,11 +43,89 @@ export function CartPage() {
     shippingUsd,
     totalUsd,
     shippingConfig,
+    currentCurrency,
     updateCartQuantity,
     removeFromCart,
     beginHostedCheckout,
     formatPrice,
   } = useStore();
+  const [checkoutProfile, setCheckoutProfile] = useState(() => {
+    const stored = readCheckoutProfile();
+    return (
+      stored || {
+        customer: {
+          firstName: "",
+          lastName: "",
+          email: "",
+          phone: "",
+        },
+        address: {
+          addressLine1: "",
+          addressLine2: "",
+          city: "",
+          state: "",
+          country: "Nigeria",
+          postalCode: "",
+          deliveryInstructions: "",
+        },
+        paymentMethod: inferDefaultPaymentMethod(),
+      }
+    );
+  });
+  const settlementCurrency = import.meta.env.VITE_PAYSTACK_SETTLEMENT_CURRENCY || "NGN";
+  const checkoutNote = useMemo(() => {
+    if (currentCurrency === settlementCurrency) {
+      return `Paystack checkout will settle in ${settlementCurrency}.`;
+    }
+    return `Displayed prices are converted estimates. Paystack checkout will settle in ${settlementCurrency}.`;
+  }, [currentCurrency, settlementCurrency]);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem(CHECKOUT_PROFILE_KEY, JSON.stringify(checkoutProfile));
+    }
+  }, [checkoutProfile]);
+
+  function updateCustomerField(field, value) {
+    setCheckoutProfile((current) => ({
+      ...current,
+      customer: {
+        ...current.customer,
+        [field]: value,
+      },
+    }));
+  }
+
+  function updateAddressField(field, value) {
+    setCheckoutProfile((current) => ({
+      ...current,
+      address: {
+        ...current.address,
+        [field]: value,
+      },
+    }));
+  }
+
+  function beginCheckout() {
+    beginHostedCheckout({
+      customer: {
+        first_name: checkoutProfile.customer.firstName,
+        last_name: checkoutProfile.customer.lastName,
+        email: checkoutProfile.customer.email,
+        phone: checkoutProfile.customer.phone,
+      },
+      address: {
+        address_line1: checkoutProfile.address.addressLine1,
+        address_line2: checkoutProfile.address.addressLine2,
+        city: checkoutProfile.address.city,
+        state: checkoutProfile.address.state,
+        country: checkoutProfile.address.country,
+        postal_code: checkoutProfile.address.postalCode,
+        delivery_instructions: checkoutProfile.address.deliveryInstructions,
+      },
+      paymentMethod: checkoutProfile.paymentMethod,
+    });
+  }
 
   if (!cartLines.length) {
     return (
@@ -124,16 +235,141 @@ export function CartPage() {
             </div>
           </div>
 
+          <div className="mt-6 border-t border-white/10 pt-6">
+            <h2 className="text-xl font-semibold text-white">Checkout details</h2>
+            <p className="mt-3 text-sm leading-7 text-slate-300">
+              Enter the customer and delivery details Paystack and order confirmation need before you continue.
+            </p>
+
+            <div className="mt-5 grid gap-4">
+              <div className="grid gap-4 sm:grid-cols-2">
+                <label className="space-y-2">
+                  <span className="text-sm font-semibold text-white">First name</span>
+                  <input
+                    value={checkoutProfile.customer.firstName}
+                    onChange={(event) => updateCustomerField("firstName", event.target.value)}
+                    className="w-full rounded-[22px] border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-sky-400"
+                  />
+                </label>
+                <label className="space-y-2">
+                  <span className="text-sm font-semibold text-white">Last name</span>
+                  <input
+                    value={checkoutProfile.customer.lastName}
+                    onChange={(event) => updateCustomerField("lastName", event.target.value)}
+                    className="w-full rounded-[22px] border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-sky-400"
+                  />
+                </label>
+              </div>
+
+              <label className="space-y-2">
+                <span className="text-sm font-semibold text-white">Email</span>
+                <input
+                  type="email"
+                  value={checkoutProfile.customer.email}
+                  onChange={(event) => updateCustomerField("email", event.target.value)}
+                  className="w-full rounded-[22px] border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-sky-400"
+                />
+              </label>
+
+              <label className="space-y-2">
+                <span className="text-sm font-semibold text-white">Phone number</span>
+                <input
+                  value={checkoutProfile.customer.phone}
+                  onChange={(event) => updateCustomerField("phone", event.target.value)}
+                  className="w-full rounded-[22px] border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-sky-400"
+                />
+              </label>
+
+              <label className="space-y-2">
+                <span className="text-sm font-semibold text-white">Address line 1</span>
+                <input
+                  value={checkoutProfile.address.addressLine1}
+                  onChange={(event) => updateAddressField("addressLine1", event.target.value)}
+                  className="w-full rounded-[22px] border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-sky-400"
+                />
+              </label>
+
+              <label className="space-y-2">
+                <span className="text-sm font-semibold text-white">Address line 2</span>
+                <input
+                  value={checkoutProfile.address.addressLine2}
+                  onChange={(event) => updateAddressField("addressLine2", event.target.value)}
+                  className="w-full rounded-[22px] border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-sky-400"
+                />
+              </label>
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                <label className="space-y-2">
+                  <span className="text-sm font-semibold text-white">City</span>
+                  <input
+                    value={checkoutProfile.address.city}
+                    onChange={(event) => updateAddressField("city", event.target.value)}
+                    className="w-full rounded-[22px] border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-sky-400"
+                  />
+                </label>
+                <label className="space-y-2">
+                  <span className="text-sm font-semibold text-white">State</span>
+                  <input
+                    value={checkoutProfile.address.state}
+                    onChange={(event) => updateAddressField("state", event.target.value)}
+                    className="w-full rounded-[22px] border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-sky-400"
+                  />
+                </label>
+              </div>
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                <label className="space-y-2">
+                  <span className="text-sm font-semibold text-white">Country</span>
+                  <input
+                    value={checkoutProfile.address.country}
+                    onChange={(event) => updateAddressField("country", event.target.value)}
+                    className="w-full rounded-[22px] border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-sky-400"
+                  />
+                </label>
+                <label className="space-y-2">
+                  <span className="text-sm font-semibold text-white">Postal code</span>
+                  <input
+                    value={checkoutProfile.address.postalCode}
+                    onChange={(event) => updateAddressField("postalCode", event.target.value)}
+                    className="w-full rounded-[22px] border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-sky-400"
+                  />
+                </label>
+              </div>
+
+              <label className="space-y-2">
+                <span className="text-sm font-semibold text-white">Delivery instructions</span>
+                <textarea
+                  value={checkoutProfile.address.deliveryInstructions}
+                  onChange={(event) => updateAddressField("deliveryInstructions", event.target.value)}
+                  rows={3}
+                  className="w-full rounded-[22px] border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-sky-400"
+                />
+              </label>
+
+              <div className="space-y-2">
+                <span className="text-sm font-semibold text-white">Payment method</span>
+                <SelectField
+                  value={checkoutProfile.paymentMethod}
+                  onValueChange={(value) =>
+                    setCheckoutProfile((current) => ({ ...current, paymentMethod: value }))
+                  }
+                  options={paymentMethodOptions}
+                  placeholder="Choose payment method"
+                />
+              </div>
+            </div>
+          </div>
+
           <button
             type="button"
-            onClick={beginHostedCheckout}
+            onClick={beginCheckout}
             className="mt-6 w-full rounded-full bg-white px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-blue-50"
           >
             Checkout with Paystack
           </button>
 
           <div className="mt-5 rounded-[24px] border border-white/10 bg-black/20 p-4 text-sm leading-7 text-slate-300">
-            Supported channels: card, bank transfer, USSD, and Apple Pay on Safari. Connect a secure backend initialization endpoint to launch the real hosted checkout flow.
+            Supported channels: card, bank transfer, USSD, and Apple Pay on Safari. {checkoutNote}
           </div>
         </div>
 

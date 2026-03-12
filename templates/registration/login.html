@@ -1,12 +1,37 @@
 {% extends 'base.html' %}
 {% block title %}Login | {{ store_name }}{% endblock %}
 {% block content %}
-<section class="container section-spacing auth-shell">
-    <div class="panel form-panel auth-panel">
+<section class="container section-spacing auth-shell auth-shell-split">
+    <div class="auth-aside">
+        <p class="eyebrow">Secure admin access</p>
+        <h1>Sign in to manage SirDavid Gadgets.</h1>
+        <p class="auth-lead">
+            The secure admin portal protects product changes, shipping rules, payment logs, and verified order operations behind your Django staff account.
+        </p>
+        <div class="auth-badges">
+            <span>Staff-only access</span>
+            <span>Verified orders</span>
+            <span>Paystack logs</span>
+        </div>
+        <div class="auth-note">
+            <strong>Why you are seeing this</strong>
+            <p>
+                The admin route now uses server-enforced Django authentication. Sign in with a staff account to continue to the protected portal.
+            </p>
+        </div>
+    </div>
+
+    <div class="panel form-panel auth-panel auth-panel-elevated">
         <p class="eyebrow">Account access</p>
-        <h1>Login</h1>
-        <form method="post">
+        <h2>Login</h2>
+        <p class="auth-helper">
+            Use your existing staff credentials. Customer accounts can sign in, but they will not be allowed into the secure admin portal.
+        </p>
+        <form method="post" class="auth-form">
             {% csrf_token %}
+            {% if next %}
+                <input type="hidden" name="next" value="{{ next }}">
+            {% endif %}
             {{ form.non_field_errors }}
             {% for field in form %}
                 <div class="field-row">
@@ -15,7 +40,7 @@
                     {{ field.errors }}
                 </div>
             {% endfor %}
-            <button type="submit" class="btn">Log in</button>
+            <button type="submit" class="btn btn-block">Log in</button>
         </form>
     </div>
 </section>

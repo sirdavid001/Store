@@ -10,6 +10,7 @@ from django.db.models import Count, Sum
 from django.http import FileResponse, Http404, HttpResponse, HttpResponseForbidden, JsonResponse
 from django.shortcuts import redirect, render
 from django.urls import reverse
+from django.views.decorators.csrf import ensure_csrf_cookie
 
 from catalog.models import Category, Product
 from orders.models import Order, OrderItem
@@ -139,6 +140,7 @@ def apple_pay_verification_file(request):
     )
 
 
+@ensure_csrf_cookie
 def react_storefront(request):
     if not FRONTEND_INDEX_FILE.exists():
         return HttpResponse(
