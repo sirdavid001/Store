@@ -2,6 +2,7 @@ import json
 
 from django.conf import settings
 from django.contrib import messages
+from django.contrib.auth import get_user_model
 from django.contrib.auth import login as auth_login
 from django.contrib.auth import logout as auth_logout
 from django.contrib.auth.views import LoginView
@@ -11,6 +12,8 @@ from django.views.decorators.http import require_POST
 from django.views.generic import CreateView
 
 from .forms import LoginForm, SignUpForm
+
+User = get_user_model()
 
 
 def _session_payload(request):
@@ -34,10 +37,17 @@ def session_login(request):
     except json.JSONDecodeError:
         return JsonResponse({"message": "Invalid login payload."}, status=400)
 
+    identifier = (payload.get("username") or payload.get("email") or "").strip()
+    username = identifier
+    if "@" in identifier:
+        matched_user = User.objects.filter(email__iexact=identifier).only("username").first()
+        if matched_user:
+            username = matched_user.get_username()
+
     form = LoginForm(
         request,
         data={
-            "username": (payload.get("username") or "").strip(),
+            "username": username,
             "password": payload.get("password") or "",
         },
     )

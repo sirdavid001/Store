@@ -192,7 +192,7 @@ export function AdminPortalPage() {
 
           <form onSubmit={submitAdminLogin} className="mt-8 space-y-4">
             <label className="block space-y-2">
-              <span className="text-sm font-semibold text-white">Username</span>
+              <span className="text-sm font-semibold text-white">Username or email</span>
               <input
                 value={credentials.username}
                 onChange={(event) =>
@@ -200,6 +200,7 @@ export function AdminPortalPage() {
                 }
                 className="w-full rounded-[22px] border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-sky-400"
                 autoComplete="username"
+                placeholder="operator or operator@example.com"
                 required
               />
             </label>

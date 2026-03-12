@@ -40,3 +40,19 @@ class AccountExperienceTests(TestCase):
         self.assertTrue(payload["isAuthenticated"])
         self.assertTrue(payload["isStaff"])
         self.assertEqual(payload["username"], "operator")
+
+    def test_session_login_accepts_email_identifier(self):
+        self.staff_user.email = "operator@example.com"
+        self.staff_user.save(update_fields=["email"])
+
+        response = self.client.post(
+            "/accounts/session/login/",
+            data=json.dumps({"username": "operator@example.com", "password": "AdminPass123!"}),
+            content_type="application/json",
+        )
+
+        self.assertEqual(response.status_code, 200)
+        payload = response.json()
+        self.assertTrue(payload["isAuthenticated"])
+        self.assertTrue(payload["isStaff"])
+        self.assertEqual(payload["username"], "operator")
