@@ -3,6 +3,7 @@ from decimal import Decimal
 from pathlib import Path
 
 import dj_database_url
+from django.core.exceptions import ImproperlyConfigured
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -34,8 +35,8 @@ SECRET_KEY = os.environ.get(
     "DJANGO_SECRET_KEY",
     "sirdavid-gadgets-dev-secret-change-before-production-4e9c7b5a2d1f8h6k3m0q",
 )
-DEBUG = env_bool("DJANGO_DEBUG", True)
 IS_VERCEL = env_bool("VERCEL", False) or "VERCEL_ENV" in os.environ
+DEBUG = env_bool("DJANGO_DEBUG", not IS_VERCEL)
 
 ALLOWED_HOSTS = env_list(
     "DJANGO_ALLOWED_HOSTS",
@@ -100,13 +101,28 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "config.wsgi.application"
 
+DATABASE_URL = os.environ.get("DATABASE_URL", "").strip()
+if IS_VERCEL and not DATABASE_URL:
+    raise ImproperlyConfigured(
+        "DATABASE_URL must be set in Vercel. Use a Supabase Postgres transaction pooler URL."
+    )
+
+DATABASE_DEFAULT = DATABASE_URL or f"sqlite:///{BASE_DIR / 'db.sqlite3'}"
 DATABASES = {
     "default": dj_database_url.config(
-        default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
+        default=DATABASE_DEFAULT,
         conn_max_age=0 if IS_VERCEL else 600,
         conn_health_checks=True,
     )
 }
+if DATABASES["default"]["ENGINE"] == "django.db.backends.postgresql":
+    DATABASES["default"].setdefault("OPTIONS", {})
+    DATABASES["default"]["OPTIONS"].setdefault(
+        "sslmode",
+        os.environ.get("POSTGRES_SSLMODE", "require"),
+    )
+    if env_bool("POSTGRES_DISABLE_PREPARED_STATEMENTS", IS_VERCEL):
+        DATABASES["default"]["OPTIONS"].setdefault("prepare_threshold", None)
 
 CACHE_DIR = BASE_DIR / ".cache"
 USE_FILE_CACHE = not IS_VERCEL and directory_writable(CACHE_DIR)
@@ -171,7 +187,7 @@ SESSION_SAVE_EVERY_REQUEST = True
 
 SITE_URL = os.environ.get(
     "SITE_URL",
-    "http://127.0.0.1:8000" if DEBUG else "https://sirdavidshop.sirdavid.site",
+    "http://127.0.0.1:8000" if DEBUG and not IS_VERCEL else "https://sirdavidshop.sirdavid.site",
 )
 STORE_NAME = "SirDavid Gadgets"
 STORE_LEGAL_NAME = "SIRDAVID MULTI-TRADE LTD"

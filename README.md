@@ -35,7 +35,11 @@ This project does not write `Order` records during checkout initiation. Customer
 - Point Paystack webhook URL to `https://sirdavidshop.sirdavid.site/payments/webhook/`
 - Replace `.well-known/apple-developer-merchantid-domain-association` with the real Apple Pay verification file
 - Run `python manage.py collectstatic` during deployment
-- Use PostgreSQL in production by setting `DATABASE_URL`
+- Use Supabase Postgres in production by setting `DATABASE_URL` to the transaction pooler URL on port `6543`
+- Set `POSTGRES_SSLMODE=require`
+- Set `POSTGRES_DISABLE_PREPARED_STATEMENTS=True`
+- Set `DJANGO_DEBUG=False` in Vercel
+- Run `python manage.py migrate` against the Supabase database after deploy
 
 ## Admin workflow
 
