@@ -3,13 +3,7 @@
   "framework": null,
   "functions": {
     "api/index.py": {
-      "includeFiles": [
-        "frontend/dist/**",
-        "templates/**",
-        "static/**",
-        "staticfiles/**",
-        ".well-known/**"
-      ]
+      "includeFiles": "{frontend/dist/**,templates/**,static/**,staticfiles/**,.well-known/**}"
     }
   },
   "rewrites": [
