@@ -99,7 +99,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = "config.wsgi.application"
+WSGI_APPLICATION = "api.wsgi.app"
 
 DATABASE_URL = os.environ.get("DATABASE_URL", "").strip()
 if IS_VERCEL and not DATABASE_URL:
