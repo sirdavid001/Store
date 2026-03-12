@@ -1,4 +1,21 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "framework": "django"
+  "framework": null,
+  "functions": {
+    "api/index.py": {
+      "includeFiles": [
+        "frontend/dist/**",
+        "templates/**",
+        "static/**",
+        "staticfiles/**",
+        ".well-known/**"
+      ]
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/api/index"
+    }
+  ]
 }

@@ -22,4 +22,4 @@ dependencies = [
 ]
 
 [tool.vercel.scripts]
-build = "npm ci --prefix frontend && npm run build --prefix frontend"
+build = "npm ci --prefix frontend && npm run build --prefix frontend && python manage.py collectstatic --noinput"
