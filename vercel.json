@@ -1,11 +1,6 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "builds": [
-    {
-      "src": "app.py",
-      "use": "@vercel/python"
-    }
-  ],
+  "buildCommand": "npm ci --prefix frontend && npm run build --prefix frontend",
   "routes": [
     {
       "src": "/(.*)",
