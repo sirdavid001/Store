@@ -21,7 +21,6 @@ import {
   X,
 } from "lucide-react";
 import { Fragment, useEffect, useState } from "react";
-import { Link } from "react-router-dom";
 import { toast } from "sonner";
 
 import {
@@ -81,21 +80,15 @@ const SHIPPING_MODE_OPTIONS = [
 const LOGIN_HINTS = {
   no_account: {
     title: "No Account Found",
-    copy: "No operator account is active for this portal yet. Complete the first-time setup flow to create your admin credentials.",
-    href: "/admin-setup-first-time",
-    action: "Go to setup",
+    copy: "No operator account is active for this portal yet. Create or provision the admin account locally, then return here and sign in.",
   },
   wrong_password: {
     title: "Incorrect Password",
-    copy: "The email exists, but the password does not match. Reset or re-run setup if this is a fresh deployment.",
-    href: "/admin-setup-first-time?mode=reset",
-    action: "Reset access",
+    copy: "The email exists, but the password does not match. Reset the credential locally or update the backend secret, then try again.",
   },
   incomplete_setup: {
     title: "Setup Incomplete",
-    copy: "The admin backend has not finished its initial provisioning. Return to setup to complete the secure operator flow.",
-    href: "/admin-setup-first-time",
-    action: "Finish setup",
+    copy: "The admin backend has not finished its local provisioning yet. Complete the setup locally before attempting another login.",
   },
 };
 
@@ -431,13 +424,6 @@ function LoginHintCard({ error }) {
         <div className="space-y-2">
           <p className="text-base font-semibold text-slate-950">{hint.title}</p>
           <p className="leading-6 text-slate-600">{hint.copy}</p>
-          <Link
-            to={hint.href}
-            className="inline-flex items-center gap-2 rounded-full bg-slate-950 px-4 py-2 text-xs font-semibold uppercase tracking-[0.24em] text-white transition hover:bg-slate-800"
-          >
-            {hint.action}
-            <ArrowRight className="h-4 w-4" />
-          </Link>
         </div>
       </div>
     </div>
@@ -1023,11 +1009,7 @@ export function AdminPortalPage() {
             <div className="mt-6 space-y-3">
               <LoginHintCard error={authError} />
               <div className="rounded-[24px] border border-slate-200 bg-slate-50 p-5 text-sm text-slate-600">
-                First deployment or fresh backend?{" "}
-                <Link to="/admin-setup-first-time" className="font-semibold text-slate-950 hover:text-blue-700">
-                  Complete first-time setup
-                </Link>
-                .
+                First deployment or fresh backend? Create the admin account locally, then return to this hidden route and sign in with the provisioned email and password.
               </div>
             </div>
           </PortalCard>

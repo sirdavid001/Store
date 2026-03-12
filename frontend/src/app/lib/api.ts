@@ -302,11 +302,3 @@ export async function updateAdminExchangeRate(rate) {
     body: { rate },
   });
 }
-
-export async function setupAdminFirstTime(payload) {
-  return request("/api/admin/setup-first-time", {
-    method: "POST",
-    includeToken: false,
-    body: payload,
-  });
-}
