@@ -1,6 +1,6 @@
 # SirDavid Gadgets
 
-Production-lean Django e-commerce MVP for **SIRDAVID MULTI-TRADE LTD**, built for `settlex.site`.
+Production-lean Django e-commerce MVP for **SIRDAVID MULTI-TRADE LTD**, built for `sirdavidshop.sirdavid.site`.
 
 ## Features
 
@@ -27,12 +27,12 @@ Production-lean Django e-commerce MVP for **SIRDAVID MULTI-TRADE LTD**, built fo
 
 This project does not write `Order` records during checkout initiation. Customer, address, and cart data are cached server-side and a Paystack transaction is created. The `payments/webhook/` endpoint verifies the webhook signature and transaction status. Only then is the order written to the database and email notifications sent.
 
-## Deployment notes for settlex.site
+## Deployment notes for sirdavidshop.sirdavid.site
 
-- Set `SITE_URL=https://settlex.site`
+- Set `SITE_URL=https://sirdavidshop.sirdavid.site`
 - Enable HTTPS and keep `DJANGO_SECURE_SSL_REDIRECT=True`
-- Point Paystack callback URL to `https://settlex.site/payments/callback/`
-- Point Paystack webhook URL to `https://settlex.site/payments/webhook/`
+- Point Paystack callback URL to `https://sirdavidshop.sirdavid.site/payments/callback/`
+- Point Paystack webhook URL to `https://sirdavidshop.sirdavid.site/payments/webhook/`
 - Replace `.well-known/apple-developer-merchantid-domain-association` with the real Apple Pay verification file
 - Run `python manage.py collectstatic` during deployment
 - Use PostgreSQL in production by setting `DATABASE_URL`

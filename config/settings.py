@@ -27,11 +27,11 @@ DEBUG = env_bool("DJANGO_DEBUG", True)
 
 ALLOWED_HOSTS = env_list(
     "DJANGO_ALLOWED_HOSTS",
-    "127.0.0.1,localhost,settlex.site,www.settlex.site",
+    "127.0.0.1,localhost,sirdavidshop.sirdavid.site,www.sirdavidshop.sirdavid.site",
 )
 CSRF_TRUSTED_ORIGINS = env_list(
     "DJANGO_CSRF_TRUSTED_ORIGINS",
-    "https://settlex.site,https://www.settlex.site",
+    "https://sirdavidshop.sirdavid.site,https://www.sirdavidshop.sirdavid.site",
 )
 
 INSTALLED_APPS = [
@@ -139,16 +139,16 @@ SESSION_SAVE_EVERY_REQUEST = True
 
 SITE_URL = os.environ.get(
     "SITE_URL",
-    "http://127.0.0.1:8000" if DEBUG else "https://settlex.site",
+    "http://127.0.0.1:8000" if DEBUG else "https://sirdavidshop.sirdavid.site",
 )
 STORE_NAME = "SirDavid Gadgets"
 STORE_LEGAL_NAME = "SIRDAVID MULTI-TRADE LTD"
 STORE_TAGLINE = "Premium electronics and gadgets for modern living."
-SUPPORT_EMAIL = os.environ.get("SUPPORT_EMAIL", "support@settlex.site")
-ADMIN_NOTIFICATION_EMAIL = os.environ.get("ADMIN_NOTIFICATION_EMAIL", "orders@settlex.site")
+SUPPORT_EMAIL = os.environ.get("SUPPORT_EMAIL", "support@sirdavidshop.sirdavid.site")
+ADMIN_NOTIFICATION_EMAIL = os.environ.get("ADMIN_NOTIFICATION_EMAIL", "orders@sirdavidshop.sirdavid.site")
 DEFAULT_FROM_EMAIL = os.environ.get(
     "DEFAULT_FROM_EMAIL",
-    "SirDavid Gadgets <no-reply@settlex.site>",
+    "SirDavid Gadgets <no-reply@sirdavidshop.sirdavid.site>",
 )
 SERVER_EMAIL = os.environ.get("SERVER_EMAIL", DEFAULT_FROM_EMAIL)
 
