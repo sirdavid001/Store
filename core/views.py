@@ -30,7 +30,9 @@ def session_payload(request):
         "isAuthenticated": is_authenticated,
         "isStaff": bool(is_authenticated and request.user.is_staff),
         "username": username,
+        "email": request.user.email if is_authenticated else "",
         "displayName": display_name or username,
+        "role": "staff" if is_authenticated and request.user.is_staff else "customer",
         "loginUrl": reverse("accounts:login"),
         "logoutUrl": reverse("accounts:logout"),
     }

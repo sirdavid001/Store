@@ -24,7 +24,9 @@ def _session_payload(request):
         "isAuthenticated": is_authenticated,
         "isStaff": bool(is_authenticated and request.user.is_staff),
         "username": username,
+        "email": request.user.email if is_authenticated else "",
         "displayName": display_name or username,
+        "role": "staff" if is_authenticated and request.user.is_staff else "customer",
         "loginUrl": reverse_lazy("accounts:login"),
         "logoutUrl": reverse_lazy("accounts:logout"),
     }
@@ -39,10 +41,31 @@ def session_login(request):
 
     identifier = (payload.get("username") or payload.get("email") or "").strip()
     username = identifier
+    matched_user = None
     if "@" in identifier:
-        matched_user = User.objects.filter(email__iexact=identifier).only("username").first()
+        matched_user = User.objects.filter(email__iexact=identifier).only("username", "is_staff", "is_active").first()
         if matched_user:
             username = matched_user.get_username()
+    else:
+        matched_user = User.objects.filter(username__iexact=identifier).only("username", "is_staff", "is_active").first()
+
+    if not matched_user:
+        return JsonResponse(
+            {
+                "message": "No admin account matches that email or username.",
+                "code": "no_account",
+            },
+            status=400,
+        )
+
+    if not matched_user.is_active or not matched_user.is_staff:
+        return JsonResponse(
+            {
+                "message": "This account has not been provisioned for admin portal access.",
+                "code": "incomplete_setup",
+            },
+            status=403,
+        )
 
     form = LoginForm(
         request,
@@ -52,7 +75,13 @@ def session_login(request):
         },
     )
     if not form.is_valid():
-        return JsonResponse({"message": "Invalid username or password."}, status=400)
+        return JsonResponse(
+            {
+                "message": "Invalid username or password.",
+                "code": "wrong_password",
+            },
+            status=400,
+        )
 
     auth_login(request, form.get_user())
     return JsonResponse(_session_payload(request))

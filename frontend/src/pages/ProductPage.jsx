@@ -118,7 +118,7 @@ export function ProductPage() {
 
           <div className="grid gap-4 rounded-[28px] border border-white/10 bg-white/5 p-4 sm:grid-cols-3 sm:p-6">
             {[
-              [ShieldCheck, "Verified checkout", "Paystack and webhook-first order confirmation"],
+              [ShieldCheck, "Secure checkout", "Hosted payment flow with clean references and premium support"],
               [Truck, "Fast delivery", "Priority dispatch for premium electronics"],
               [Star, "Curated stock", "High-confidence inventory for serious buyers"],
             ].map(([Icon, title, text]) => (

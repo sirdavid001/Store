@@ -52,7 +52,7 @@ export function TrackOrderPage() {
           Follow a verified delivery in real time.
         </h1>
         <p className="max-w-xl text-sm leading-7 text-slate-300 md:text-base md:leading-8">
-          Enter your order number, tracking number, or checkout email. Only orders verified by Paystack webhook appear as confirmed shipments.
+          Enter your order number, tracking number, or checkout email to view the latest payment, packaging, and delivery updates.
         </p>
 
         <form onSubmit={handleLookup} className="section-frame rounded-[28px] p-5 sm:rounded-[32px] sm:p-6">

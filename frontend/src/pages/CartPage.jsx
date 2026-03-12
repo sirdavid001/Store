@@ -137,7 +137,7 @@ export function CartPage() {
         </div>
         <h1 className="text-4xl font-semibold text-white">Your cart is empty.</h1>
         <p className="max-w-xl text-base leading-8 text-slate-300">
-          Add a premium device or accessory to begin checkout. Orders will only be confirmed after the Paystack webhook verifies payment.
+          Add a premium device or accessory to begin checkout and continue to secure payment.
         </p>
         <Link
           to="/shop"

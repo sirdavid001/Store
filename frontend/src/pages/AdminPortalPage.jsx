@@ -36,6 +36,7 @@ import {
   getStoredAdminToken,
   isAdminApiConfigured,
   loginAdmin,
+  logoutAdmin,
   updateAdminExchangeRate,
   updateAdminOrder,
   updateAdminProduct,
@@ -501,6 +502,7 @@ function SelectInput({ options, className = "", ...props }) {
 }
 
 export function AdminPortalPage() {
+  const adminApiConfigured = isAdminApiConfigured();
   const [authState, setAuthState] = useState({
     checking: true,
     authenticated: false,
@@ -559,7 +561,7 @@ export function AdminPortalPage() {
   }, [authState.authenticated, activeTab]);
 
   async function verifyStoredSession() {
-    if (!getStoredAdminToken()) {
+    if (adminApiConfigured && !getStoredAdminToken()) {
       setAuthState({ checking: false, authenticated: false, admin: null });
       return;
     }
@@ -696,7 +698,8 @@ export function AdminPortalPage() {
     }
   }
 
-  function logout() {
+  async function logout() {
+    await logoutAdmin();
     clearStoredAdminToken();
     setAuthState({ checking: false, authenticated: false, admin: null });
     setOrders([]);
@@ -907,7 +910,7 @@ export function AdminPortalPage() {
             </p>
             <h1 className="mt-3 font-['Sora'] text-4xl font-semibold">Verifying operator session</h1>
             <p className="mt-4 text-sm leading-7 text-slate-300">
-              Checking for a valid admin token and loading SirDavid Gadgets operations.
+              Checking for a valid admin session and loading SirDavid Gadgets operations.
             </p>
           </PortalCard>
         </div>
@@ -938,15 +941,16 @@ export function AdminPortalPage() {
               Orders, products, and shipping in one hidden control room.
             </h1>
             <p className="mt-5 max-w-2xl text-sm leading-7 text-slate-300 md:mt-6 md:text-base md:leading-8">
-              Authenticate with your operator email and password. This hidden route is designed for
-              SirDavid Gadgets staff using token-based access backed by the external admin service.
+              {adminApiConfigured
+                ? "Authenticate with your operator email and password. This hidden route is designed for SirDavid Gadgets staff using token-based access backed by the external admin service."
+                : "Authenticate with your provisioned Django staff username or email and password. This hidden route stays inside the SirDavid Gadgets storefront and uses local admin mode."}
             </p>
             <div className="mt-8 grid gap-3 text-sm text-slate-200 min-[390px]:grid-cols-2 xl:flex xl:flex-wrap">
               <span className="inline-flex min-h-11 items-center justify-center rounded-full border border-white/10 bg-white/6 px-4 py-2 xl:justify-start">
-                X-Admin-Token sessions
+                {adminApiConfigured ? "X-Admin-Token sessions" : "Django staff sessions"}
               </span>
               <span className="inline-flex min-h-11 items-center justify-center rounded-full border border-white/10 bg-white/6 px-4 py-2 xl:justify-start">
-                Supabase edge function
+                {adminApiConfigured ? "Supabase edge function" : "Local admin mode"}
               </span>
               <span className="inline-flex min-h-11 items-center justify-center rounded-full border border-white/10 bg-white/6 px-4 py-2 xl:justify-start">
                 Paystack-aware order ops
@@ -962,26 +966,26 @@ export function AdminPortalPage() {
               Operator login
             </h2>
             <p className="mt-3 text-sm leading-7 text-slate-600">
-              Use the provisioned admin email and password.
+              Use the provisioned admin username or email and password.
             </p>
 
-            {!isAdminApiConfigured() ? (
-              <div className="mt-6 rounded-[24px] border border-amber-200 bg-amber-50 p-5 text-sm text-amber-900">
-                The admin API is not configured yet. Add `VITE_SUPABASE_PROJECT_ID` and
-                `VITE_SUPABASE_ANON_KEY` before using this portal.
+            {!adminApiConfigured ? (
+              <div className="mt-6 rounded-[24px] border border-blue-200 bg-blue-50 p-5 text-sm text-blue-900">
+                Local admin mode is active. Sign in with the Django staff account provisioned for
+                this store.
               </div>
             ) : null}
 
             <form onSubmit={submitLogin} className="mt-8 space-y-4">
-              <Field label="Email address">
+              <Field label="Email address or username">
                 <TextInput
-                  type="email"
+                  type="text"
                   value={credentials.email}
                   onChange={(event) =>
                     setCredentials((current) => ({ ...current, email: event.target.value }))
                   }
-                  placeholder="admin@sirdavid.site"
-                  autoComplete="email"
+                  placeholder="admin@sirdavid.site or sirdavid"
+                  autoComplete="username"
                   required
                 />
               </Field>
@@ -1006,7 +1010,7 @@ export function AdminPortalPage() {
 
               <button
                 type="submit"
-                disabled={submittingAuth || !isAdminApiConfigured()}
+                disabled={submittingAuth}
                 className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full bg-slate-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {submittingAuth ? null : <Shield className="h-4 w-4" />}

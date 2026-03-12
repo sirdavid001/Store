@@ -50,7 +50,7 @@ export const paymentFeatures = [
   {
     title: "Paystack Verified Checkout",
     description:
-      "Hosted checkout flow with verified references, reconciliation-friendly logs, and webhook-first order confirmation.",
+      "Hosted checkout flow with verified references, reconciliation-friendly logs, and a polished premium payment experience.",
   },
   {
     title: "Fast Checkout Channels",
@@ -60,7 +60,7 @@ export const paymentFeatures = [
   {
     title: "Branded Confirmation Emails",
     description:
-      "Customers only receive branded order confirmation after the Paystack webhook validates a successful payment event.",
+      "Customers receive branded order emails with clear payment and delivery updates.",
   },
 ];
 
@@ -280,7 +280,7 @@ export const defaultOrders = [
     amountUsd: 1499,
     items: ["iPhone 16 Pro Max"],
     timeline: [
-      { title: "Payment verified", detail: "Paystack webhook confirmed payment.", time: "12 Mar · 09:15" },
+      { title: "Order processing", detail: "Payment cleared and queued for fulfillment.", time: "12 Mar · 09:15" },
       { title: "Packed in Lagos", detail: "Quality check complete and sealed for dispatch.", time: "12 Mar · 10:30" },
       { title: "In transit", detail: "Handed over to last-mile partner.", time: "12 Mar · 14:05" },
     ],
@@ -297,7 +297,7 @@ export const defaultOrders = [
     amountUsd: 915,
     items: ["Galaxy Tab S10", "Sony WH-1000XM5"],
     timeline: [
-      { title: "Payment verified", detail: "Webhook validation passed.", time: "08 Mar · 08:09" },
+      { title: "Order processing", detail: "Payment completed and approved for shipment.", time: "08 Mar · 08:09" },
       { title: "Shipped", detail: "Cross-border courier confirmed pickup.", time: "08 Mar · 15:44" },
       { title: "Delivered", detail: "Customer received and signed.", time: "11 Mar · 13:22" },
     ],
@@ -442,7 +442,7 @@ export const policyContent = {
       {
         heading: "When is my order confirmed?",
         body:
-          "Only after the Paystack webhook verifies payment success. Starting checkout alone does not create a confirmed order.",
+          "After checkout processing is completed. Starting checkout alone does not create a confirmed order.",
       },
       {
         heading: "Can I pay by bank transfer or USSD?",

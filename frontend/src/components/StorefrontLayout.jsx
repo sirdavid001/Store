@@ -318,7 +318,7 @@ export function StorefrontLayout() {
               </p>
               <h3 className="text-2xl font-semibold text-white">Premium electronics for modern living.</h3>
               <p className="max-w-md text-sm leading-7 text-slate-400">
-                A dark, premium storefront for phones, laptops, tablets, and accessories with Paystack hosted checkout and webhook-first order verification.
+                A dark, premium storefront for phones, laptops, tablets, and accessories with Paystack hosted checkout and polished order updates.
               </p>
               <div className="flex flex-wrap justify-center gap-2 text-xs font-semibold text-slate-200 md:justify-start">
                 <span className="rounded-full border border-white/10 bg-white/6 px-3 py-2">Paystack</span>

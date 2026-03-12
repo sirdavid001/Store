@@ -40,6 +40,7 @@ class AccountExperienceTests(TestCase):
         self.assertTrue(payload["isAuthenticated"])
         self.assertTrue(payload["isStaff"])
         self.assertEqual(payload["username"], "operator")
+        self.assertEqual(payload["role"], "staff")
 
     def test_session_login_accepts_email_identifier(self):
         self.staff_user.email = "operator@example.com"
@@ -56,3 +57,26 @@ class AccountExperienceTests(TestCase):
         self.assertTrue(payload["isAuthenticated"])
         self.assertTrue(payload["isStaff"])
         self.assertEqual(payload["username"], "operator")
+        self.assertEqual(payload["email"], "operator@example.com")
+
+    def test_session_login_returns_no_account_code_for_unknown_user(self):
+        response = self.client.post(
+            "/accounts/session/login/",
+            data=json.dumps({"username": "missing@example.com", "password": "AdminPass123!"}),
+            content_type="application/json",
+        )
+
+        self.assertEqual(response.status_code, 400)
+        payload = response.json()
+        self.assertEqual(payload["code"], "no_account")
+
+    def test_session_login_returns_wrong_password_code_for_staff_user(self):
+        response = self.client.post(
+            "/accounts/session/login/",
+            data=json.dumps({"username": "operator", "password": "WrongPass123!"}),
+            content_type="application/json",
+        )
+
+        self.assertEqual(response.status_code, 400)
+        payload = response.json()
+        self.assertEqual(payload["code"], "wrong_password")
