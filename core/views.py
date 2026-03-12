@@ -1,15 +1,22 @@
+import mimetypes
+from pathlib import Path
+
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
 from django.core.mail import send_mail
 from django.db.models import Count, Sum
-from django.http import FileResponse, Http404
+from django.http import FileResponse, Http404, HttpResponse
 from django.shortcuts import redirect, render
 
 from catalog.models import Category, Product
 from orders.models import Order, OrderItem
 
 from .forms import ContactForm
+
+
+FRONTEND_BUILD_DIR = Path(settings.BASE_DIR) / "frontend_build"
+FRONTEND_INDEX_FILE = FRONTEND_BUILD_DIR / "index.html"
 
 
 def home(request):
@@ -114,4 +121,38 @@ def apple_pay_verification_file(request):
         content_type="text/plain",
     )
 
-# Create your views here.
+
+def react_storefront(request):
+    if not FRONTEND_INDEX_FILE.exists():
+        return HttpResponse(
+            "The React storefront bundle has not been built yet. Run `npm run build` in `frontend/`.",
+            content_type="text/plain; charset=utf-8",
+            status=503,
+        )
+
+    response = HttpResponse(
+        FRONTEND_INDEX_FILE.read_text(encoding="utf-8"),
+        content_type="text/html; charset=utf-8",
+    )
+    response["Cache-Control"] = "no-cache"
+    return response
+
+
+def react_asset(request, asset_path):
+    asset_file = (FRONTEND_BUILD_DIR / asset_path).resolve()
+    build_root = FRONTEND_BUILD_DIR.resolve()
+
+    if build_root not in asset_file.parents:
+        raise Http404("Invalid asset path.")
+    if not asset_file.exists() or not asset_file.is_file():
+        raise Http404("Asset not found.")
+
+    content_type, encoding = mimetypes.guess_type(asset_file.name)
+    response = FileResponse(
+        asset_file.open("rb"),
+        content_type=content_type or "application/octet-stream",
+    )
+    response["Cache-Control"] = "public, max-age=31536000, immutable"
+    if encoding:
+        response["Content-Encoding"] = encoding
+    return response

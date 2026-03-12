@@ -1,11 +1,18 @@
-from django.urls import path
+from django.urls import path, re_path
 
 from . import views
 
 app_name = "core"
 
 urlpatterns = [
-    path("", views.home, name="home"),
+    path("", views.react_storefront, name="home"),
+    path("frontend-assets/<path:asset_path>", views.react_asset, name="react-asset"),
+    re_path(
+        r"^(?:shop|cart|track-order|terms-and-conditions|refund-policy|privacy-policy|shipping-policy|faqs|legal|secure-admin-portal-xyz)/?$",
+        views.react_storefront,
+        name="react-route",
+    ),
+    re_path(r"^product/[^/]+/?$", views.react_storefront, name="react-product"),
     path("about/", views.about, name="about"),
     path("contact/", views.contact, name="contact"),
     path("faq/", views.faq, name="faq"),
