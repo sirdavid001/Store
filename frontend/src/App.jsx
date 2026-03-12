@@ -2,6 +2,7 @@ import { Navigate, Route, Routes } from "react-router-dom";
 
 import { StorefrontLayout } from "./components/StorefrontLayout";
 import { AdminPortalPage } from "./pages/AdminPortalPage";
+import { AdminSetupFirstTimePage } from "./pages/AdminSetupFirstTimePage";
 import { CartPage } from "./pages/CartPage";
 import { LegalHubPage } from "./pages/LegalHubPage";
 import { PolicyPage } from "./pages/PolicyPage";
@@ -12,6 +13,8 @@ import { TrackOrderPage } from "./pages/TrackOrderPage";
 export default function App() {
   return (
     <Routes>
+      <Route path="secure-admin-portal-xyz" element={<AdminPortalPage />} />
+      <Route path="admin-setup-first-time" element={<AdminSetupFirstTimePage />} />
       <Route element={<StorefrontLayout />}>
         <Route index element={<ShopPage />} />
         <Route path="shop" element={<ShopPage />} />
@@ -27,7 +30,6 @@ export default function App() {
         <Route path="shipping-policy" element={<PolicyPage policyKey="shipping-policy" />} />
         <Route path="faqs" element={<PolicyPage policyKey="faqs" />} />
         <Route path="legal" element={<LegalHubPage />} />
-        <Route path="secure-admin-portal-xyz" element={<AdminPortalPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/shop" replace />} />
     </Routes>
