@@ -46,7 +46,6 @@ const STORAGE_KEYS = {
   shipping: "sirdavid-shipping",
   logs: "sirdavid-payments",
   currency: "sirdavid-currency",
-  admin: "sirdavid-admin-session",
 };
 
 const StoreContext = createContext(null);
@@ -147,15 +146,21 @@ export function StoreProvider({ children }) {
   const [paymentLogs, setPaymentLogs] = useState(() =>
     readStorage(STORAGE_KEYS.logs, defaultPaymentLogs),
   );
-  const [adminAuthenticated, setAdminAuthenticated] = useState(() =>
-    readStorage(STORAGE_KEYS.admin, false),
-  );
   const [currentCurrency, setCurrentCurrency] = useState(() =>
     readStorage(STORAGE_KEYS.currency, "NGN"),
   );
   const [exchangeRates, setExchangeRates] = useState(FALLBACK_RATES);
   const [loadingRates, setLoadingRates] = useState(true);
   const [lastRateSync, setLastRateSync] = useState(null);
+  const [sessionStatus, setSessionStatus] = useState({
+    loading: true,
+    isAuthenticated: false,
+    isStaff: false,
+    username: "",
+    displayName: "",
+    loginUrl: "/accounts/login/",
+    logoutUrl: "/accounts/logout/",
+  });
 
   useEffect(() => {
     window.localStorage.setItem(STORAGE_KEYS.products, JSON.stringify(products));
@@ -178,12 +183,58 @@ export function StoreProvider({ children }) {
   }, [paymentLogs]);
 
   useEffect(() => {
-    window.localStorage.setItem(STORAGE_KEYS.admin, JSON.stringify(adminAuthenticated));
-  }, [adminAuthenticated]);
-
-  useEffect(() => {
     window.localStorage.setItem(STORAGE_KEYS.currency, JSON.stringify(currentCurrency));
   }, [currentCurrency]);
+
+  useEffect(() => {
+    let active = true;
+
+    async function loadSessionStatus() {
+      const endpoint = import.meta.env.VITE_SESSION_STATUS_ENDPOINT || "/session/status/";
+
+      try {
+        const response = await fetch(endpoint, {
+          credentials: "include",
+          headers: {
+            Accept: "application/json",
+          },
+        });
+        if (!response.ok) {
+          throw new Error("session status lookup failed");
+        }
+
+        const payload = await response.json();
+        if (!active) {
+          return;
+        }
+
+        setSessionStatus({
+          loading: false,
+          isAuthenticated: Boolean(payload.isAuthenticated),
+          isStaff: Boolean(payload.isStaff),
+          username: payload.username ?? "",
+          displayName: payload.displayName ?? payload.username ?? "",
+          loginUrl: payload.loginUrl || "/accounts/login/",
+          logoutUrl: payload.logoutUrl || "/accounts/logout/",
+        });
+      } catch {
+        if (!active) {
+          return;
+        }
+
+        setSessionStatus((current) => ({
+          ...current,
+          loading: false,
+        }));
+      }
+    }
+
+    loadSessionStatus();
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   useEffect(() => {
     let active = true;
@@ -348,23 +399,6 @@ export function StoreProvider({ children }) {
     }
   }
 
-  function loginAdmin(password) {
-    const expectedPassword = import.meta.env.VITE_ADMIN_PORTAL_PASSWORD || "SirDavidAdmin!2026";
-    if (password !== expectedPassword) {
-      toast.error("Incorrect admin password.");
-      return false;
-    }
-
-    setAdminAuthenticated(true);
-    toast.success("Admin portal unlocked.");
-    return true;
-  }
-
-  function logoutAdmin() {
-    setAdminAuthenticated(false);
-    toast.message("Admin portal locked.");
-  }
-
   function upsertProduct(productInput) {
     startTransition(() => {
       setProducts((current) => {
@@ -426,7 +460,7 @@ export function StoreProvider({ children }) {
     exchangeRates,
     loadingRates,
     lastRateSync,
-    adminAuthenticated,
+    sessionStatus,
     currencyOptions,
     addToCart,
     updateCartQuantity,
@@ -435,8 +469,6 @@ export function StoreProvider({ children }) {
     beginHostedCheckout,
     formatPrice,
     setCurrency,
-    loginAdmin,
-    logoutAdmin,
     upsertProduct,
     deleteProduct,
     updateOrderStatus,

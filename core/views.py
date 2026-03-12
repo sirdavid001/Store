@@ -4,10 +4,12 @@ from pathlib import Path
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
+from django.contrib.auth.views import redirect_to_login
 from django.core.mail import send_mail
 from django.db.models import Count, Sum
-from django.http import FileResponse, Http404, HttpResponse
+from django.http import FileResponse, Http404, HttpResponse, HttpResponseForbidden, JsonResponse
 from django.shortcuts import redirect, render
+from django.urls import reverse
 
 from catalog.models import Category, Product
 from orders.models import Order, OrderItem
@@ -17,6 +19,21 @@ from .forms import ContactForm
 
 FRONTEND_BUILD_DIR = Path(settings.BASE_DIR) / "frontend_build"
 FRONTEND_INDEX_FILE = FRONTEND_BUILD_DIR / "index.html"
+
+
+def session_payload(request):
+    is_authenticated = request.user.is_authenticated
+    username = request.user.get_username() if is_authenticated else ""
+    display_name = request.user.get_full_name() if is_authenticated else ""
+
+    return {
+        "isAuthenticated": is_authenticated,
+        "isStaff": bool(is_authenticated and request.user.is_staff),
+        "username": username,
+        "displayName": display_name or username,
+        "loginUrl": reverse("accounts:login"),
+        "logoutUrl": reverse("accounts:logout"),
+    }
 
 
 def home(request):
@@ -135,6 +152,20 @@ def react_storefront(request):
         content_type="text/html; charset=utf-8",
     )
     response["Cache-Control"] = "no-cache"
+    return response
+
+
+def staff_portal(request):
+    if not request.user.is_authenticated:
+        return redirect_to_login(request.get_full_path(), login_url=settings.LOGIN_URL)
+    if not request.user.is_staff:
+        return HttpResponseForbidden("Staff access required.")
+    return react_storefront(request)
+
+
+def session_status(request):
+    response = JsonResponse(session_payload(request))
+    response["Cache-Control"] = "no-store"
     return response
 
 

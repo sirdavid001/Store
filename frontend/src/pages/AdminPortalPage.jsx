@@ -1,6 +1,7 @@
 import * as Dialog from "@radix-ui/react-dialog";
 import * as Tabs from "@radix-ui/react-tabs";
 import {
+  ArrowRight,
   Boxes,
   CircleDollarSign,
   LockKeyhole,
@@ -12,6 +13,7 @@ import {
   X,
 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 
 import { SelectField } from "../components/SelectField";
 import { departmentCards } from "../data/storeData";
@@ -63,20 +65,17 @@ function buildDraft(product) {
 
 export function AdminPortalPage() {
   const {
-    adminAuthenticated,
-    loginAdmin,
-    logoutAdmin,
     products,
     orders,
     paymentLogs,
     shippingConfig,
+    sessionStatus,
     upsertProduct,
     deleteProduct,
     updateOrderStatus,
     updateShipping,
     formatPrice,
   } = useStore();
-  const [password, setPassword] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [draft, setDraft] = useState(emptyDraft);
   const [shippingDraft, setShippingDraft] = useState(shippingConfig);
@@ -85,11 +84,11 @@ export function AdminPortalPage() {
     setShippingDraft(shippingConfig);
   }, [shippingConfig]);
 
-  function handleUnlock(event) {
-    event.preventDefault();
-    if (loginAdmin(password)) {
-      setPassword("");
-    }
+  function buildLoginUrl() {
+    const nextPath = `${window.location.pathname}${window.location.search}`;
+    const loginUrl = sessionStatus.loginUrl || "/accounts/login/";
+    const separator = loginUrl.includes("?") ? "&" : "?";
+    return `${loginUrl}${separator}next=${encodeURIComponent(nextPath)}`;
   }
 
   function openProductEditor(product) {
@@ -111,35 +110,73 @@ export function AdminPortalPage() {
     setDialogOpen(false);
   }
 
-  if (!adminAuthenticated) {
+  if (sessionStatus.loading) {
     return (
       <div className="mx-auto flex min-h-[70vh] max-w-xl items-center justify-center px-4 py-16 md:px-6">
-        <form onSubmit={handleUnlock} className="section-frame w-full rounded-[36px] p-8 text-center">
+        <div className="section-frame w-full rounded-[36px] p-8 text-center">
+          <div className="mx-auto inline-flex rounded-full bg-white/8 p-4 text-sky-300">
+            <ShieldCheck className="h-7 w-7" />
+          </div>
+          <p className="mt-6 text-xs font-semibold uppercase tracking-[0.35em] text-sky-300">
+            Secure Admin Portal
+          </p>
+          <h1 className="mt-3 text-4xl font-semibold text-white">Checking staff access</h1>
+          <p className="mt-4 text-sm leading-7 text-slate-300">
+            Validating your Django session before loading operator controls.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!sessionStatus.isAuthenticated) {
+    return (
+      <div className="mx-auto flex min-h-[70vh] max-w-xl items-center justify-center px-4 py-16 md:px-6">
+        <div className="section-frame w-full rounded-[36px] p-8 text-center">
           <div className="mx-auto inline-flex rounded-full bg-white/8 p-4 text-sky-300">
             <LockKeyhole className="h-7 w-7" />
           </div>
           <p className="mt-6 text-xs font-semibold uppercase tracking-[0.35em] text-sky-300">
             Secure Admin Portal
           </p>
-          <h1 className="mt-3 text-4xl font-semibold text-white">Protected operator route</h1>
+          <h1 className="mt-3 text-4xl font-semibold text-white">Django login required</h1>
           <p className="mt-4 text-sm leading-7 text-slate-300">
-            Manage catalog entries, shipping rules, payment logs, and verified orders for SirDavid Gadgets.
+            This portal now uses server-side authentication. Sign in with a Django staff account before accessing operator controls.
           </p>
-          <input
-            type="password"
-            value={password}
-            onChange={(event) => setPassword(event.target.value)}
-            placeholder="Enter portal password"
-            className="mt-6 w-full rounded-[22px] border border-white/10 bg-white/5 px-4 py-4 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-sky-400"
-          />
-          <button
-            type="submit"
-            className="mt-4 inline-flex items-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-blue-50"
+          <a
+            href={buildLoginUrl()}
+            className="mt-6 inline-flex items-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-blue-50"
           >
             <ShieldCheck className="h-4 w-4" />
-            Unlock Portal
-          </button>
-        </form>
+            Continue to Login
+          </a>
+        </div>
+      </div>
+    );
+  }
+
+  if (!sessionStatus.isStaff) {
+    return (
+      <div className="mx-auto flex min-h-[70vh] max-w-xl items-center justify-center px-4 py-16 md:px-6">
+        <div className="section-frame w-full rounded-[36px] p-8 text-center">
+          <div className="mx-auto inline-flex rounded-full bg-red-500/10 p-4 text-red-200">
+            <LockKeyhole className="h-7 w-7" />
+          </div>
+          <p className="mt-6 text-xs font-semibold uppercase tracking-[0.35em] text-sky-300">
+            Secure Admin Portal
+          </p>
+          <h1 className="mt-3 text-4xl font-semibold text-white">Staff access required</h1>
+          <p className="mt-4 text-sm leading-7 text-slate-300">
+            You are signed in as {sessionStatus.displayName || sessionStatus.username}, but this route is restricted to Django staff users.
+          </p>
+          <Link
+            to="/shop"
+            className="mt-6 inline-flex items-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-blue-50"
+          >
+            Back to Shop
+            <ArrowRight className="h-4 w-4" />
+          </Link>
+        </div>
       </div>
     );
   }
@@ -150,6 +187,9 @@ export function AdminPortalPage() {
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.35em] text-sky-300">Secure Admin Portal</p>
           <h1 className="mt-3 text-5xl font-semibold text-white">Operator controls for SirDavid Gadgets</h1>
+          <p className="mt-3 text-sm text-slate-400">
+            Signed in as {sessionStatus.displayName || sessionStatus.username}
+          </p>
         </div>
         <div className="flex gap-3">
           <button
@@ -159,13 +199,12 @@ export function AdminPortalPage() {
           >
             Add Product
           </button>
-          <button
-            type="button"
-            onClick={logoutAdmin}
+          <a
+            href="/admin/"
             className="rounded-full border border-white/10 bg-white/5 px-5 py-3 text-sm font-semibold text-white transition hover:bg-white/10"
           >
-            Lock Portal
-          </button>
+            Django Admin
+          </a>
         </div>
       </div>
 
