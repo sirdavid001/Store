@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block title %}Login | {{ store_name }}{% endblock %}
+{% block content %}
+<section class="container section-spacing auth-shell">
+    <div class="panel form-panel auth-panel">
+        <p class="eyebrow">Account access</p>
+        <h1>Login</h1>
+        <form method="post">
+            {% csrf_token %}
+            {{ form.non_field_errors }}
+            {% for field in form %}
+                <div class="field-row">
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {{ field.errors }}
+                </div>
+            {% endfor %}
+            <button type="submit" class="btn">Log in</button>
+        </form>
+    </div>
+</section>
+{% endblock %}

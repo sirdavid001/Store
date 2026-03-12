@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% load store_tags %}
+{% block title %}Review order | {{ store_name }}{% endblock %}
+{% block content %}
+<section class="container section-spacing checkout-grid">
+    <div class="panel form-panel">
+        <p class="eyebrow">Checkout step 4</p>
+        <h1>Review and confirm</h1>
+        <div class="review-block">
+            <h2>Customer</h2>
+            <p>{{ customer.first_name }} {{ customer.last_name }}<br>{{ customer.email }}<br>{{ customer.phone }}</p>
+        </div>
+        <div class="review-block">
+            <h2>Delivery</h2>
+            <p>
+                {{ address.address_line1 }}<br>
+                {% if address.address_line2 %}{{ address.address_line2 }}<br>{% endif %}
+                {{ address.city }}, {{ address.state }}<br>
+                {{ address.country }} {{ address.postal_code }}
+            </p>
+        </div>
+        <div class="review-block">
+            <h2>Payment</h2>
+            <p>{{ payment.payment_method|title }}</p>
+        </div>
+        <form method="post">
+            {% csrf_token %}
+            <button type="submit" class="btn">Proceed to secure Paystack payment</button>
+        </form>
+    </div>
+    {% include 'partials/order_summary.html' %}
+</section>
+{% endblock %}

@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% block title %}Customer details | {{ store_name }}{% endblock %}
+{% block content %}
+<section class="container section-spacing checkout-grid">
+    <div class="panel form-panel">
+        <p class="eyebrow">Checkout step 1</p>
+        <h1>Customer information</h1>
+        <p>Guest checkout is enabled. If you already have an account, <a href="{% url 'accounts:login' %}">log in</a> to keep this order in your history.</p>
+        <form method="post">
+            {% csrf_token %}
+            {{ form.non_field_errors }}
+            {% for field in form %}
+                <div class="field-row">
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {{ field.errors }}
+                </div>
+            {% endfor %}
+            <div class="form-actions">
+                <button type="submit" name="action" value="send_code" class="btn btn-secondary">Send verification code</button>
+                <button type="submit" name="action" value="verify" class="btn">Verify and continue</button>
+            </div>
+        </form>
+    </div>
+    <aside class="panel">
+        <h2>Why verify email?</h2>
+        <p>It prevents mistyped addresses before payment and ensures order confirmation emails reach the right inbox.</p>
+    </aside>
+</section>
+{% endblock %}

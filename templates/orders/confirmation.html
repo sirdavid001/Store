@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+{% load store_tags %}
+{% block title %}Order confirmed | {{ store_name }}{% endblock %}
+{% block content %}
+<section class="container section-spacing">
+    <div class="panel confirmation-panel">
+        <p class="eyebrow">Order confirmed</p>
+        <h1>Thank you for your purchase.</h1>
+        <p>Your order has been created after verified payment confirmation.</p>
+        <div class="confirmation-grid">
+            <div>
+                <span>Order number</span>
+                <strong>{{ order.order_number }}</strong>
+            </div>
+            <div>
+                <span>Tracking number</span>
+                <strong>{{ order.tracking_number }}</strong>
+            </div>
+            <div>
+                <span>Status</span>
+                <strong>{{ order.get_status_display }}</strong>
+            </div>
+            <div>
+                <span>Total</span>
+                <strong>{{ order.total_amount|money }}</strong>
+            </div>
+        </div>
+        <div class="review-block">
+            <h2>Delivery address</h2>
+            <p>{{ order.address_line1 }}, {{ order.city }}, {{ order.state }}, {{ order.country }}</p>
+        </div>
+        <ul class="summary-list">
+            {% for item in order.items.all %}
+                <li><span>{{ item.product_name }} x {{ item.quantity }}</span><strong>{{ item.line_total|money }}</strong></li>
+            {% endfor %}
+        </ul>
+        <div class="form-actions">
+            <a href="{% url 'orders:track' %}" class="btn btn-secondary">Track order</a>
+            <a href="{% url 'catalog:list' %}" class="btn">Continue shopping</a>
+        </div>
+    </div>
+</section>
+{% endblock %}

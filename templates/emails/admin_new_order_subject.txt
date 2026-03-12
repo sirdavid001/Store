@@ -1,0 +1,1 @@
+New paid order: {{ order.order_number }}

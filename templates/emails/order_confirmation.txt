@@ -1,0 +1,9 @@
+Hello {{ order.customer_name }},
+
+Your order {{ order.order_number }} has been confirmed after payment verification.
+
+Tracking number: {{ order.tracking_number }}
+Total: {{ order.total_amount }}
+Delivery address: {{ order.address_line1 }}, {{ order.city }}, {{ order.state }}, {{ order.country }}
+
+Thank you for shopping with {{ store_name|default:"SirDavid Gadgets" }}.

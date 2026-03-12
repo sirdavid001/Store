@@ -1,0 +1,18 @@
+{% load store_tags %}
+<section class="summary-card">
+    <h3>Order summary</h3>
+    <ul class="summary-list">
+        {% for item in cart %}
+            <li>
+                <span>{{ item.product.name }} x {{ item.quantity }}</span>
+                <strong>{{ item.line_total|money }}</strong>
+            </li>
+        {% endfor %}
+    </ul>
+    <dl class="summary-totals">
+        <div><dt>Subtotal</dt><dd data-cart-subtotal>{{ cart.subtotal|money }}</dd></div>
+        <div><dt>Tax</dt><dd data-cart-tax>{{ cart.tax_amount|money }}</dd></div>
+        <div><dt>Shipping</dt><dd data-cart-shipping>{{ cart.shipping_amount|money }}</dd></div>
+        <div class="summary-total"><dt>Total</dt><dd data-cart-total>{{ cart.total|money }}</dd></div>
+    </dl>
+</section>

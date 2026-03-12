@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+{% load store_tags %}
+{% block title %}Cart | {{ store_name }}{% endblock %}
+{% block content %}
+<section
+    class="container section-spacing cart-layout"
+    data-cart-summary
+    data-tax-rate="{{ cart_tax_rate }}"
+    data-shipping-fee="{{ cart_shipping_fee }}"
+    data-free-shipping-threshold="{{ cart_free_shipping_threshold }}"
+    data-currency="{{ paystack_currency }}"
+>
+    <div class="panel">
+        <div class="section-heading">
+            <div>
+                <p class="eyebrow">Cart</p>
+                <h1>Your shopping cart</h1>
+            </div>
+        </div>
+        {% if cart|length %}
+            <div class="cart-list">
+                {% for item in cart %}
+                    <article class="cart-row cart-line" data-unit-price="{{ item.unit_price }}">
+                        <div class="cart-row-info">
+                            <h2><a href="{{ item.product.get_absolute_url }}">{{ item.product.name }}</a></h2>
+                            <p>{{ item.product.short_description }}</p>
+                            <span class="eyebrow">{{ item.product.category.name }}</span>
+                        </div>
+                        <form method="post" action="{% url 'cart:update' item.product.id %}" class="cart-actions">
+                            {% csrf_token %}
+                            <label for="quantity-{{ item.product.id }}">Qty</label>
+                            <input
+                                id="quantity-{{ item.product.id }}"
+                                class="form-input quantity-input"
+                                name="quantity"
+                                min="0"
+                                max="{{ item.available_stock }}"
+                                type="number"
+                                value="{{ item.quantity }}"
+                                data-cart-quantity
+                            >
+                            <strong data-line-total>{{ item.line_total|money }}</strong>
+                            <button type="submit" class="btn btn-secondary">Update</button>
+                        </form>
+                        <form method="post" action="{% url 'cart:remove' item.product.id %}">
+                            {% csrf_token %}
+                            <button type="submit" class="text-button">Remove</button>
+                        </form>
+                    </article>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-state">
+                Your cart is empty. <a href="{% url 'catalog:list' %}">Browse the catalog</a>.
+            </div>
+        {% endif %}
+    </div>
+    <div>
+        {% include 'partials/order_summary.html' %}
+        {% if cart|length %}
+            <a href="{% url 'checkout:customer' %}" class="btn btn-block">Proceed to checkout</a>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

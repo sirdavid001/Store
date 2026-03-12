@@ -1,0 +1,7 @@
+New order received.
+
+Order number: {{ order.order_number }}
+Customer: {{ order.customer_name }}
+Email: {{ order.email }}
+Total: {{ order.total_amount }}
+Payment reference: {{ order.paystack_reference }}

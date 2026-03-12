@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% block title %}Contact | {{ store_name }}{% endblock %}
+{% block content %}
+<section class="container section-spacing split-layout">
+    <div class="prose">
+        <p class="eyebrow">Contact us</p>
+        <h1>Need help with an order or a product question?</h1>
+        <p>Use the form and the store team will get back to you. For existing orders, include your order number if available.</p>
+        <p>Email: <a href="mailto:{{ support_email }}">{{ support_email }}</a></p>
+    </div>
+    <form method="post" class="panel form-panel">
+        {% csrf_token %}
+        {{ form.non_field_errors }}
+        {% for field in form %}
+            <div class="field-row">
+                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                {{ field.errors }}
+            </div>
+        {% endfor %}
+        <button type="submit" class="btn">Send message</button>
+    </form>
+</section>
+{% endblock %}

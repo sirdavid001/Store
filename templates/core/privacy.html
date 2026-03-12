@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% block title %}Privacy | {{ store_name }}{% endblock %}
+{% block content %}
+<section class="container section-spacing prose">
+    <h1>Privacy policy</h1>
+    <p>{{ store_name }} stores customer information needed to fulfill paid orders and provide support.</p>
+    <h2>What we collect</h2>
+    <p>Name, email address, phone number, shipping address, order items, and delivery details for confirmed purchases.</p>
+    <h2>Payment security</h2>
+    <p>Sensitive card information is handled by Paystack. Secret keys remain server-side and are never exposed to the frontend.</p>
+    <h2>Retention</h2>
+    <p>Data is retained for order fulfillment, support, accounting, and fraud-prevention obligations.</p>
+    <h2>Your rights</h2>
+    <p>Contact the store team for correction requests or data-related support.</p>
+</section>
+{% endblock %}

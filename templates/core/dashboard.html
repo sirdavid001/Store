@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% load store_tags %}
+{% block title %}Dashboard | {{ store_name }}{% endblock %}
+{% block content %}
+<section class="container section-spacing">
+    <div class="section-heading">
+        <div>
+            <p class="eyebrow">Operations</p>
+            <h1>Store dashboard</h1>
+        </div>
+        <a href="/admin/" class="btn btn-secondary">Open Django admin</a>
+    </div>
+    <div class="stats-grid">
+        <article class="stat-card"><span>Total orders</span><strong>{{ order_count }}</strong></article>
+        <article class="stat-card"><span>Revenue</span><strong>{{ paid_revenue|money }}</strong></article>
+        <article class="stat-card"><span>Pending</span><strong>{{ pending_orders }}</strong></article>
+        <article class="stat-card"><span>Processing</span><strong>{{ processing_orders }}</strong></article>
+    </div>
+    <div class="split-layout dashboard-layout">
+        <section class="panel">
+            <h2>Recent orders</h2>
+            <div class="table-list">
+                {% for order in recent_orders %}
+                    <article class="table-row">
+                        <div>
+                            <strong>{{ order.order_number }}</strong>
+                            <p>{{ order.customer_name }}</p>
+                        </div>
+                        <div>{{ order.get_status_display }}</div>
+                        <div>{{ order.total_amount|money }}</div>
+                    </article>
+                {% empty %}
+                    <p>No paid orders yet.</p>
+                {% endfor %}
+            </div>
+        </section>
+        <section class="panel">
+            <h2>Top sellers</h2>
+            <div class="table-list">
+                {% for item in top_items %}
+                    <article class="table-row">
+                        <div><strong>{{ item.product_name }}</strong></div>
+                        <div>{{ item.quantity_sold }} sold</div>
+                    </article>
+                {% empty %}
+                    <p>No sales data yet.</p>
+                {% endfor %}
+            </div>
+        </section>
+    </div>
+</section>
+{% endblock %}

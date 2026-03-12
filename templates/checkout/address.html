@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% block title %}Delivery address | {{ store_name }}{% endblock %}
+{% block content %}
+<section class="container section-spacing checkout-grid">
+    <div class="panel form-panel">
+        <p class="eyebrow">Checkout step 2</p>
+        <h1>Delivery address</h1>
+        <form method="post">
+            {% csrf_token %}
+            {% for field in form %}
+                <div class="field-row">
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {{ field.errors }}
+                </div>
+            {% endfor %}
+            <button type="submit" class="btn">Continue to payment method</button>
+        </form>
+    </div>
+</section>
+{% endblock %}

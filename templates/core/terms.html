@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% block title %}Terms | {{ store_name }}{% endblock %}
+{% block content %}
+<section class="container section-spacing prose">
+    <h1>Terms &amp; conditions</h1>
+    <p>All purchases made through {{ store_name }} are subject to product availability, payment verification, and successful fulfillment.</p>
+    <h2>Orders</h2>
+    <p>Orders are confirmed only after payment is verified. Unverified or failed transactions do not create an order record.</p>
+    <h2>Pricing</h2>
+    <p>Prices are displayed in {{ paystack_currency }} where configured. Taxes and shipping are shown before payment initialization.</p>
+    <h2>Fulfillment</h2>
+    <p>Delivery windows may vary by location and inventory status. Customers are notified when orders move to shipped and delivered stages.</p>
+    <h2>Support</h2>
+    <p>Questions and disputes should be directed to <a href="mailto:{{ support_email }}">{{ support_email }}</a>.</p>
+</section>
+{% endblock %}

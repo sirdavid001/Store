@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% load store_tags %}
+{% block title %}Order history | {{ store_name }}{% endblock %}
+{% block content %}
+<section class="container section-spacing">
+    <div class="section-heading">
+        <div>
+            <p class="eyebrow">Account</p>
+            <h1>Your order history</h1>
+        </div>
+    </div>
+    <div class="table-list panel">
+        {% for order in orders %}
+            <article class="table-row">
+                <div>
+                    <strong>{{ order.order_number }}</strong>
+                    <p>{{ order.created_at|date:"M d, Y" }}</p>
+                </div>
+                <div>{{ order.get_status_display }}</div>
+                <div>{{ order.total_amount|money }}</div>
+            </article>
+        {% empty %}
+            <p>No account-linked orders yet. Guest checkouts can still be tracked from the tracking page.</p>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

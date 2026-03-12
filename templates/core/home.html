@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+{% block title %}{{ store_name }} | Electronics store{% endblock %}
+{% block content %}
+<section class="hero">
+    <div class="container hero-grid">
+        <div class="hero-copy">
+            <p class="eyebrow">Trusted gadgets. Secure checkout.</p>
+            <h1>Shop phones, laptops, accessories, and Apple Pay-ready electronics with confidence.</h1>
+            <p>
+                {{ store_name }} is the online retail arm of {{ store_legal_name }}. We focus on reliable devices,
+                transparent delivery, and payments that are only confirmed after Paystack verification.
+            </p>
+            <div class="hero-actions">
+                <a href="{% url 'catalog:list' %}" class="btn">Browse products</a>
+                <a href="{% url 'orders:track' %}" class="btn btn-secondary">Track an order</a>
+            </div>
+        </div>
+        <div class="hero-panel">
+            <div class="metric-card">
+                <span>Featured categories</span>
+                <strong>{{ featured_categories|length }}</strong>
+            </div>
+            <div class="metric-card">
+                <span>Fast checkout</span>
+                <strong>Paystack</strong>
+            </div>
+            <div class="metric-card">
+                <span>Apple Pay support</span>
+                <strong>Verified domain ready</strong>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="container section-spacing">
+    <div class="section-heading">
+        <div>
+            <p class="eyebrow">Categories</p>
+            <h2>Shop by department</h2>
+        </div>
+        <a href="{% url 'catalog:list' %}">View full catalog</a>
+    </div>
+    <div class="category-grid">
+        {% for category in featured_categories %}
+            <a href="{{ category.get_absolute_url }}" class="category-card">
+                <span>{{ category.name }}</span>
+                <p>{{ category.description|default:"Curated gadgets and electronics for this category." }}</p>
+            </a>
+        {% empty %}
+            <div class="empty-state">Add featured categories from the admin to populate this section.</div>
+        {% endfor %}
+    </div>
+</section>
+
+<section class="container section-spacing">
+    <div class="section-heading">
+        <div>
+            <p class="eyebrow">Featured products</p>
+            <h2>Best picks from the storefront</h2>
+        </div>
+    </div>
+    <div class="product-grid">
+        {% for product in featured_products %}
+            {% include 'partials/product_card.html' %}
+        {% empty %}
+            <div class="empty-state">Add featured products in the admin to showcase them here.</div>
+        {% endfor %}
+    </div>
+</section>
+
+<section class="band">
+    <div class="container band-grid">
+        <div>
+            <p class="eyebrow">Payments</p>
+            <h2>Hosted checkout with Paystack verification</h2>
+            <p>Card, bank transfer, USSD, and Apple Pay on supported Safari devices.</p>
+        </div>
+        <div>
+            <p class="eyebrow">Delivery</p>
+            <h2>Clear status updates after payment confirmation</h2>
+            <p>Customers receive branded confirmation emails only after a successful webhook verification.</p>
+        </div>
+    </div>
+</section>
+
+<section class="container section-spacing">
+    <div class="section-heading">
+        <div>
+            <p class="eyebrow">New arrivals</p>
+            <h2>Freshly added inventory</h2>
+        </div>
+    </div>
+    <div class="product-grid">
+        {% for product in latest_products %}
+            {% include 'partials/product_card.html' %}
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

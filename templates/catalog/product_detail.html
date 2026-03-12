@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% load store_tags %}
+{% block title %}{{ product.name }} | {{ store_name }}{% endblock %}
+{% block content %}
+<section class="container section-spacing product-detail-grid">
+    <div class="panel product-gallery">
+        {% if product.image %}
+            <img src="{{ product.image.url }}" alt="{{ product.name }}">
+        {% else %}
+            <div class="gallery-fallback">{{ product.category.name }}</div>
+        {% endif %}
+    </div>
+    <div class="panel product-detail-panel">
+        <p class="eyebrow">{{ product.category.name }}</p>
+        <h1>{{ product.name }}</h1>
+        <p class="product-price">{{ product.price|money }}</p>
+        <p>{{ product.description }}</p>
+        <ul class="product-flags">
+            <li>SKU: {{ product.sku }}</li>
+            <li>{% if product.in_stock %}{{ product.stock_quantity }} in stock{% else %}Out of stock{% endif %}</li>
+            <li>Secure checkout via Paystack</li>
+        </ul>
+        <form method="post" action="{% url 'cart:add' product.id %}" class="inline-form">
+            {% csrf_token %}
+            <div class="field-row quantity-picker">
+                <label for="quantity">Quantity</label>
+                <input class="form-input quantity-input" id="quantity" type="number" name="quantity" min="1" max="{{ product.stock_quantity }}" value="1">
+            </div>
+            <input type="hidden" name="next" value="{% url 'cart:detail' %}">
+            <button type="submit" class="btn" {% if not product.in_stock %}disabled{% endif %}>Add to cart</button>
+        </form>
+        {% if product.specifications.all %}
+            <div class="spec-table">
+                <h2>Specifications</h2>
+                {% for spec in product.specifications.all %}
+                    <div><dt>{{ spec.label }}</dt><dd>{{ spec.value }}</dd></div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+</section>
+
+<section class="container section-spacing">
+    <div class="section-heading">
+        <div>
+            <p class="eyebrow">You may also like</p>
+            <h2>Related products</h2>
+        </div>
+    </div>
+    <div class="product-grid">
+        {% for product in related_products %}
+            {% include 'partials/product_card.html' %}
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

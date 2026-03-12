@@ -1,0 +1,87 @@
+{% load static %}
+{% load store_tags %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}{{ store_name }}{% endblock %}</title>
+    <meta name="description" content="{% block meta_description %}{{ store_tagline }}{% endblock %}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/site.css' %}">
+</head>
+<body>
+    <div class="site-shell">
+        <header class="site-header">
+            <div class="container header-inner">
+                <a class="brand" href="{% url 'core:home' %}">
+                    <span class="brand-mark">SD</span>
+                    <span>
+                        <strong>{{ store_name }}</strong>
+                        <small>{{ store_legal_name }}</small>
+                    </span>
+                </a>
+                <button class="nav-toggle" type="button" data-nav-toggle aria-label="Toggle navigation">Menu</button>
+                <nav class="site-nav" data-site-nav>
+                    <a href="{% url 'catalog:list' %}">Shop</a>
+                    <a href="{% url 'orders:track' %}">Track order</a>
+                    <a href="{% url 'core:about' %}">About</a>
+                    <a href="{% url 'core:contact' %}">Contact</a>
+                    {% if user.is_authenticated %}
+                        <a href="{% url 'orders:history' %}">My orders</a>
+                        <form method="post" action="{% url 'accounts:logout' %}" class="nav-inline-form">
+                            {% csrf_token %}
+                            <button type="submit" class="nav-link-button">Log out</button>
+                        </form>
+                    {% else %}
+                        <a href="{% url 'accounts:login' %}">Login</a>
+                        <a href="{% url 'accounts:signup' %}" class="nav-cta">Create account</a>
+                    {% endif %}
+                    {% if user.is_staff %}
+                        <a href="{% url 'core:dashboard' %}">Dashboard</a>
+                        <a href="/admin/">Admin</a>
+                    {% endif %}
+                    <a class="cart-chip" href="{% url 'cart:detail' %}">
+                        Cart
+                        <span>{{ cart_count }}</span>
+                    </a>
+                </nav>
+            </div>
+        </header>
+
+        <main>
+            {% include 'partials/messages.html' %}
+            {% include 'partials/breadcrumbs.html' %}
+            {% block content %}{% endblock %}
+        </main>
+
+        <footer class="site-footer">
+            <div class="container footer-grid">
+                <div>
+                    <h3>{{ store_name }}</h3>
+                    <p>{{ store_tagline }}</p>
+                    <p>Support: <a href="mailto:{{ support_email }}">{{ support_email }}</a></p>
+                </div>
+                <div>
+                    <h4>Company</h4>
+                    <a href="{% url 'core:about' %}">About us</a>
+                    <a href="{% url 'core:faq' %}">FAQ</a>
+                    <a href="{% url 'core:contact' %}">Contact us</a>
+                </div>
+                <div>
+                    <h4>Policies</h4>
+                    <a href="{% url 'core:terms' %}">Terms &amp; conditions</a>
+                    <a href="{% url 'core:privacy' %}">Privacy policy</a>
+                    <a href="{% url 'orders:track' %}">Order tracking</a>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script src="{% static 'js/site.js' %}"></script>
+    <script src="{% static 'js/checkout.js' %}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

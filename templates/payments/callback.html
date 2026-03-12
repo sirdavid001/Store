@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% block title %}Payment confirmation | {{ store_name }}{% endblock %}
+{% block content %}
+<section class="container section-spacing">
+    <div
+        class="panel payment-status-card"
+        data-payment-reference="{{ reference }}"
+        {% if transaction_status != 'failed' %}data-payment-status-url="{% url 'payments:status' reference %}"{% endif %}
+    >
+        <p class="eyebrow">Payment status</p>
+        {% if transaction_status == 'success' %}
+            <h1>Payment received. Finalizing your order.</h1>
+            <p>We are waiting for the verified webhook confirmation before your order is created.</p>
+        {% elif transaction_status == 'failed' %}
+            <h1>Payment failed</h1>
+            <p>Your transaction was not completed. You can return to checkout and try again.</p>
+            <a href="{% url 'checkout:review' %}" class="btn">Return to review</a>
+        {% else %}
+            <h1>Confirming payment</h1>
+            <p>Do not close this page. We are checking your transaction status with Paystack.</p>
+        {% endif %}
+        <div class="status-pulse"></div>
+    </div>
+</section>
+{% endblock %}

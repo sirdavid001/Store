@@ -1,0 +1,44 @@
+# SirDavid Gadgets
+
+Production-lean Django e-commerce MVP for **SIRDAVID MULTI-TRADE LTD**, built for `settlex.site`.
+
+## Features
+
+- Product catalog with categories, featured items, search, filtering, stock tracking, and detailed product pages
+- Session-backed cart with quantity updates, running totals, and responsive checkout access
+- Four-step checkout with email verification, delivery address capture, payment method selection, and order review
+- Paystack integration using hosted checkout plus webhook verification
+- Order creation **only after** successful Paystack verification on the webhook path
+- Guest checkout, public order tracking, logged-in customer history, Django admin order management, and a staff dashboard
+- Branded order confirmation, admin alert, and order status update emails
+- Apple Pay-ready verification endpoint at `/.well-known/apple-developer-merchantid-domain-association`
+
+## Local setup
+
+1. Create and activate a virtual environment.
+2. Install dependencies with `pip install -r requirements.txt`.
+3. Copy `.env.example` to `.env` and set Paystack, SMTP, and security values.
+4. Run `python manage.py migrate`.
+5. Create an admin account with `python manage.py createsuperuser`.
+6. Optional: seed demo products with `python manage.py seed_store`.
+7. Start the server with `python manage.py runserver`.
+
+## Critical payment rule
+
+This project does not write `Order` records during checkout initiation. Customer, address, and cart data are cached server-side and a Paystack transaction is created. The `payments/webhook/` endpoint verifies the webhook signature and transaction status. Only then is the order written to the database and email notifications sent.
+
+## Deployment notes for settlex.site
+
+- Set `SITE_URL=https://settlex.site`
+- Enable HTTPS and keep `DJANGO_SECURE_SSL_REDIRECT=True`
+- Point Paystack callback URL to `https://settlex.site/payments/callback/`
+- Point Paystack webhook URL to `https://settlex.site/payments/webhook/`
+- Replace `.well-known/apple-developer-merchantid-domain-association` with the real Apple Pay verification file
+- Run `python manage.py collectstatic` during deployment
+- Use PostgreSQL in production by setting `DATABASE_URL`
+
+## Admin workflow
+
+- Use `/admin/` for secure catalog and order management
+- Use `/dashboard/` for a lightweight operations view
+- Update order statuses from the admin to trigger customer status emails

@@ -1,0 +1,5 @@
+Hello {{ order.customer_name }},
+
+Your order {{ order.order_number }} is now marked as {{ order.get_status_display }}.
+
+Tracking number: {{ order.tracking_number }}

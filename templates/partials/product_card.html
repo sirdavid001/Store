@@ -1,0 +1,27 @@
+{% load store_tags %}
+<article class="product-card">
+    <a href="{{ product.get_absolute_url }}" class="product-card-media">
+        {% if product.image %}
+            <img src="{{ product.image.url }}" alt="{{ product.name }}">
+        {% else %}
+            <div class="media-fallback">{{ product.category.name }}</div>
+        {% endif %}
+    </a>
+    <div class="product-card-body">
+        <p class="eyebrow">{{ product.category.name }}</p>
+        <h3><a href="{{ product.get_absolute_url }}">{{ product.name }}</a></h3>
+        <p>{{ product.short_description }}</p>
+        <div class="product-meta">
+            <strong>{{ product.price|money }}</strong>
+            <span class="{% if product.in_stock %}stock-good{% else %}stock-bad{% endif %}">
+                {% if product.in_stock %}In stock{% else %}Out of stock{% endif %}
+            </span>
+        </div>
+        <form method="post" action="{% url 'cart:add' product.id %}" class="product-card-form">
+            {% csrf_token %}
+            <input type="hidden" name="quantity" value="1">
+            <input type="hidden" name="next" value="{{ request.path }}">
+            <button type="submit" class="btn">Add to cart</button>
+        </form>
+    </div>
+</article>

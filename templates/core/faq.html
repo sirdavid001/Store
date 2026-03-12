@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% block title %}FAQ | {{ store_name }}{% endblock %}
+{% block content %}
+<section class="container section-spacing prose">
+    <h1>Frequently asked questions</h1>
+    <div class="faq-list">
+        <article>
+            <h2>When is my order recorded?</h2>
+            <p>Your order is saved only after Paystack confirms payment and the server verifies the webhook.</p>
+        </article>
+        <article>
+            <h2>Which payment methods are supported?</h2>
+            <p>Card payments, bank transfer, USSD, and Apple Pay on supported Apple devices using Safari.</p>
+        </article>
+        <article>
+            <h2>Can I check out without an account?</h2>
+            <p>Yes. Guest checkout is enabled. Returning customers can create an account to view future order history.</p>
+        </article>
+        <article>
+            <h2>How do I track an order?</h2>
+            <p>Use the order tracking page with your order ID or tracking number plus the email used at checkout.</p>
+        </article>
+    </div>
+</section>
+{% endblock %}

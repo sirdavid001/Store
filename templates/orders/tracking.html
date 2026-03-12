@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% load store_tags %}
+{% block title %}Track order | {{ store_name }}{% endblock %}
+{% block content %}
+<section class="container section-spacing checkout-grid">
+    <div class="panel form-panel">
+        <p class="eyebrow">Order tracking</p>
+        <h1>Track your order</h1>
+        <form method="post">
+            {% csrf_token %}
+            {{ form.non_field_errors }}
+            {% for field in form %}
+                <div class="field-row">
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {{ field.errors }}
+                </div>
+            {% endfor %}
+            <button type="submit" class="btn">Find order</button>
+        </form>
+    </div>
+    {% if order %}
+        <aside class="panel">
+            <h2>{{ order.order_number }}</h2>
+            <p>Status: <strong>{{ order.get_status_display }}</strong></p>
+            <p>Tracking: {{ order.tracking_number }}</p>
+            <p>Paid: {{ order.total_amount|money }}</p>
+            <p>Delivery: {{ order.address_line1 }}, {{ order.city }}, {{ order.state }}</p>
+            <ul class="summary-list">
+                {% for item in order.items.all %}
+                    <li><span>{{ item.product_name }} x {{ item.quantity }}</span><strong>{{ item.line_total|money }}</strong></li>
+                {% endfor %}
+            </ul>
+        </aside>
+    {% endif %}
+</section>
+{% endblock %}

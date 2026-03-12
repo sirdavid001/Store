@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% block title %}About | {{ store_name }}{% endblock %}
+{% block content %}
+<section class="container section-spacing prose">
+    <h1>About {{ store_name }}</h1>
+    <p>{{ store_name }} is operated by {{ store_legal_name }}, focused on consumer electronics and gadgets.</p>
+    <p>
+        The store is designed for practical buying: clear product details, secure checkout, mobile-first browsing,
+        and order fulfillment visibility from payment to delivery.
+    </p>
+    <div class="feature-list">
+        <article>
+            <h2>What we sell</h2>
+            <p>Phones, laptops, accessories, and everyday tech selected for reliability and value.</p>
+        </article>
+        <article>
+            <h2>How payments work</h2>
+            <p>Orders are only created after Paystack confirms a successful payment and the webhook is verified.</p>
+        </article>
+        <article>
+            <h2>Customer support</h2>
+            <p>Questions before or after purchase are handled through our contact and tracking flows.</p>
+        </article>
+    </div>
+</section>
+{% endblock %}
