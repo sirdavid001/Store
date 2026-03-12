@@ -20,6 +20,3 @@ dependencies = [
   "urllib3==2.6.3",
   "whitenoise==6.12.0",
 ]
-
-[tool.vercel.scripts]
-build = "npm ci --prefix frontend && npm run build --prefix frontend && python manage.py collectstatic --noinput"
