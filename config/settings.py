@@ -24,6 +24,7 @@ SECRET_KEY = os.environ.get(
     "sirdavid-gadgets-dev-secret-change-before-production-4e9c7b5a2d1f8h6k3m0q",
 )
 DEBUG = env_bool("DJANGO_DEBUG", True)
+IS_VERCEL = env_bool("VERCEL", False) or "VERCEL_ENV" in os.environ
 
 ALLOWED_HOSTS = env_list(
     "DJANGO_ALLOWED_HOSTS",
@@ -33,6 +34,11 @@ CSRF_TRUSTED_ORIGINS = env_list(
     "DJANGO_CSRF_TRUSTED_ORIGINS",
     "https://sirdavidshop.sirdavid.site,https://www.sirdavidshop.sirdavid.site",
 )
+if IS_VERCEL:
+    if ".vercel.app" not in ALLOWED_HOSTS:
+        ALLOWED_HOSTS.append(".vercel.app")
+    if "https://*.vercel.app" not in CSRF_TRUSTED_ORIGINS:
+        CSRF_TRUSTED_ORIGINS.append("https://*.vercel.app")
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -86,18 +92,26 @@ WSGI_APPLICATION = "config.wsgi.application"
 DATABASES = {
     "default": dj_database_url.config(
         default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
-        conn_max_age=600,
+        conn_max_age=0 if IS_VERCEL else 600,
         conn_health_checks=True,
     )
 }
 
-CACHES = {
-    "default": {
-        "BACKEND": "django.core.cache.backends.filebased.FileBasedCache",
-        "LOCATION": BASE_DIR / ".cache",
-        "TIMEOUT": int(os.environ.get("DJANGO_CACHE_TIMEOUT", "3600")),
+if IS_VERCEL:
+    CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+            "TIMEOUT": int(os.environ.get("DJANGO_CACHE_TIMEOUT", "3600")),
+        }
     }
-}
+else:
+    CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.filebased.FileBasedCache",
+            "LOCATION": BASE_DIR / ".cache",
+            "TIMEOUT": int(os.environ.get("DJANGO_CACHE_TIMEOUT", "3600")),
+        }
+    }
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -133,7 +147,11 @@ LOGIN_REDIRECT_URL = "orders:history"
 LOGOUT_REDIRECT_URL = "core:home"
 LOGIN_URL = "accounts:login"
 
-SESSION_ENGINE = "django.contrib.sessions.backends.db"
+SESSION_ENGINE = (
+    "django.contrib.sessions.backends.signed_cookies"
+    if IS_VERCEL
+    else "django.contrib.sessions.backends.db"
+)
 SESSION_COOKIE_AGE = 60 * 60 * 24 * 14
 SESSION_SAVE_EVERY_REQUEST = True
 
@@ -215,16 +233,19 @@ LOGGING = {
             "class": "logging.StreamHandler",
             "formatter": "standard",
         },
-        "file": {
-            "class": "logging.handlers.RotatingFileHandler",
-            "filename": BASE_DIR / "logs" / "sirdavid-gadgets.log",
-            "formatter": "standard",
-            "maxBytes": 1024 * 1024 * 5,
-            "backupCount": 3,
-        },
     },
     "root": {
-        "handlers": ["console", "file"],
+        "handlers": ["console"],
         "level": os.environ.get("DJANGO_LOG_LEVEL", "INFO"),
     },
 }
+
+if not IS_VERCEL:
+    LOGGING["handlers"]["file"] = {
+        "class": "logging.handlers.RotatingFileHandler",
+        "filename": BASE_DIR / "logs" / "sirdavid-gadgets.log",
+        "formatter": "standard",
+        "maxBytes": 1024 * 1024 * 5,
+        "backupCount": 3,
+    }
+    LOGGING["root"]["handlers"].append("file")
