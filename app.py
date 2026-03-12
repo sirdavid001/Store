@@ -11,7 +11,10 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "api.settings")
 _django_app = None
 _startup_error = None
 _base_dir = Path(__file__).resolve().parent
-_static_dir = _base_dir / "static"
+_static_dirs = [
+    (_base_dir / "staticfiles").resolve(),
+    (_base_dir / "static").resolve(),
+]
 
 try:
     _django_app = get_wsgi_application()
@@ -46,6 +49,16 @@ def _serve_file(start_response, file_path):
     return [payload]
 
 
+def _resolve_static_file(requested_path):
+    for static_dir in _static_dirs:
+        candidate = (static_dir / requested_path).resolve()
+        if static_dir not in candidate.parents:
+            continue
+        if candidate.exists() and candidate.is_file():
+            return candidate
+    return None
+
+
 def app(environ, start_response):
     path = environ.get("PATH_INFO", "")
 
@@ -56,8 +69,8 @@ def app(environ, start_response):
 
     if path.startswith("/static/"):
         requested = path.removeprefix("/static/")
-        static_file = (_static_dir / requested).resolve()
-        if _static_dir.resolve() not in static_file.parents or not static_file.exists() or not static_file.is_file():
+        static_file = _resolve_static_file(requested)
+        if static_file is None:
             return _respond(start_response, "404 Not Found", "Static asset not found")
         return _serve_file(start_response, static_file)
 
