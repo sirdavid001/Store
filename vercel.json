@@ -1,10 +1,10 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": null,
-  "buildCommand": "npm ci --prefix frontend && npm run build --prefix frontend && python manage.py collectstatic --noinput",
+  "buildCommand": "npm ci --prefix frontend && npm run build --prefix frontend && python3 scripts/prepare_frontend_bundle.py && python3 manage.py collectstatic --noinput",
   "functions": {
     "api/index.py": {
-      "includeFiles": "{frontend/dist/**,templates/**,static/**,staticfiles/**,.well-known/**}"
+      "includeFiles": "{templates/**,staticfiles/**,.well-known/**}"
     }
   },
   "rewrites": [

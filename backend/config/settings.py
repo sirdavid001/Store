@@ -166,6 +166,7 @@ STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 FRONTEND_BUILD_DIR = BASE_DIR / "frontend" / "dist"
+FRONTEND_TEMPLATE_FILE = BASE_DIR / "templates" / "react_storefront.html"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 

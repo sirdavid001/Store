@@ -7,7 +7,6 @@ app_name = "core"
 urlpatterns = [
     path("", views.react_storefront, name="home"),
     path("session/status/", views.session_status, name="session-status"),
-    path("frontend-assets/<path:asset_path>", views.react_asset, name="react-asset"),
     path("secure-admin-portal-xyz/", views.staff_portal, name="staff-portal"),
     re_path(
         r"^(?:shop|cart|track-order|terms-and-conditions|refund-policy|privacy-policy|shipping-policy|faqs|legal)/?$",

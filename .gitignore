@@ -9,3 +9,5 @@ logs/*.log
 .cache/
 frontend/node_modules/
 frontend/dist/
+static/frontend-assets/
+templates/react_storefront.html

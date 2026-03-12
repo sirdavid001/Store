@@ -1,5 +1,3 @@
-import mimetypes
-
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
@@ -16,8 +14,7 @@ from orders.models import Order, OrderItem
 from .forms import ContactForm
 
 
-FRONTEND_BUILD_DIR = settings.FRONTEND_BUILD_DIR
-FRONTEND_INDEX_FILE = FRONTEND_BUILD_DIR / "index.html"
+FRONTEND_TEMPLATE_FILE = settings.FRONTEND_TEMPLATE_FILE
 
 
 def session_payload(request):
@@ -142,7 +139,7 @@ def apple_pay_verification_file(request):
 
 @ensure_csrf_cookie
 def react_storefront(request):
-    if not FRONTEND_INDEX_FILE.exists():
+    if not FRONTEND_TEMPLATE_FILE.exists():
         return HttpResponse(
             "The React storefront bundle has not been built yet. Run `npm run build` in `frontend/`.",
             content_type="text/plain; charset=utf-8",
@@ -150,7 +147,7 @@ def react_storefront(request):
         )
 
     response = HttpResponse(
-        FRONTEND_INDEX_FILE.read_text(encoding="utf-8"),
+        FRONTEND_TEMPLATE_FILE.read_text(encoding="utf-8"),
         content_type="text/html; charset=utf-8",
     )
     response["Cache-Control"] = "no-cache"
@@ -164,24 +161,4 @@ def staff_portal(request):
 def session_status(request):
     response = JsonResponse(session_payload(request))
     response["Cache-Control"] = "no-store"
-    return response
-
-
-def react_asset(request, asset_path):
-    asset_file = (FRONTEND_BUILD_DIR / asset_path).resolve()
-    build_root = FRONTEND_BUILD_DIR.resolve()
-
-    if build_root not in asset_file.parents:
-        raise Http404("Invalid asset path.")
-    if not asset_file.exists() or not asset_file.is_file():
-        raise Http404("Asset not found.")
-
-    content_type, encoding = mimetypes.guess_type(asset_file.name)
-    response = FileResponse(
-        asset_file.open("rb"),
-        content_type=content_type or "application/octet-stream",
-    )
-    response["Cache-Control"] = "public, max-age=31536000, immutable"
-    if encoding:
-        response["Content-Encoding"] = encoding
     return response
