@@ -4,10 +4,9 @@ from pathlib import Path
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
-from django.contrib.auth.views import redirect_to_login
 from django.core.mail import send_mail
 from django.db.models import Count, Sum
-from django.http import FileResponse, Http404, HttpResponse, HttpResponseForbidden, JsonResponse
+from django.http import FileResponse, Http404, HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.views.decorators.csrf import ensure_csrf_cookie
@@ -158,10 +157,6 @@ def react_storefront(request):
 
 
 def staff_portal(request):
-    if not request.user.is_authenticated:
-        return redirect_to_login(request.get_full_path(), login_url=settings.LOGIN_URL)
-    if not request.user.is_staff:
-        return HttpResponseForbidden("Staff access required.")
     return react_storefront(request)
 
 

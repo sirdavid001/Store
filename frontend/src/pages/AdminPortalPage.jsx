@@ -70,6 +70,8 @@ export function AdminPortalPage() {
     paymentLogs,
     shippingConfig,
     sessionStatus,
+    adminLogin,
+    adminLogout,
     upsertProduct,
     deleteProduct,
     updateOrderStatus,
@@ -79,17 +81,13 @@ export function AdminPortalPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [draft, setDraft] = useState(emptyDraft);
   const [shippingDraft, setShippingDraft] = useState(shippingConfig);
+  const [credentials, setCredentials] = useState({ username: "", password: "" });
+  const [authError, setAuthError] = useState("");
+  const [submittingAuth, setSubmittingAuth] = useState(false);
 
   useEffect(() => {
     setShippingDraft(shippingConfig);
   }, [shippingConfig]);
-
-  function buildLoginUrl() {
-    const nextPath = `${window.location.pathname}${window.location.search}`;
-    const loginUrl = sessionStatus.loginUrl || "/accounts/login/";
-    const separator = loginUrl.includes("?") ? "&" : "?";
-    return `${loginUrl}${separator}next=${encodeURIComponent(nextPath)}`;
-  }
 
   function openProductEditor(product) {
     setDraft(buildDraft(product));
@@ -108,6 +106,30 @@ export function AdminPortalPage() {
       image: draft.image || draft.gallery[0],
     });
     setDialogOpen(false);
+  }
+
+  async function submitAdminLogin(event) {
+    event.preventDefault();
+    setAuthError("");
+    setSubmittingAuth(true);
+
+    try {
+      await adminLogin(credentials);
+      setCredentials({ username: "", password: "" });
+    } catch (error) {
+      setAuthError(error.message || "Could not sign in.");
+    } finally {
+      setSubmittingAuth(false);
+    }
+  }
+
+  async function handleAdminLogout() {
+    setAuthError("");
+    try {
+      await adminLogout();
+    } catch (error) {
+      setAuthError(error.message || "Could not sign out.");
+    }
   }
 
   if (sessionStatus.loading) {
@@ -131,25 +153,83 @@ export function AdminPortalPage() {
 
   if (!sessionStatus.isAuthenticated) {
     return (
-      <div className="mx-auto flex min-h-[70vh] max-w-xl items-center justify-center px-4 py-16 md:px-6">
-        <div className="section-frame w-full rounded-[36px] p-8 text-center">
-          <div className="mx-auto inline-flex rounded-full bg-white/8 p-4 text-sky-300">
+      <div className="mx-auto grid min-h-[70vh] max-w-6xl gap-6 px-4 py-16 md:px-6 lg:grid-cols-[1.05fr_0.95fr]">
+        <div className="section-frame rounded-[36px] bg-gradient-to-br from-slate-950 via-blue-950/80 to-slate-900 p-8">
+          <p className="text-xs font-semibold uppercase tracking-[0.35em] text-sky-300">
+            Secure Admin Portal
+          </p>
+          <h1 className="mt-4 max-w-[12ch] text-5xl font-semibold text-white">
+            Sign in without leaving the storefront.
+          </h1>
+          <p className="mt-5 max-w-2xl text-sm leading-8 text-slate-300">
+            This operator route now stays inside the SirDavid Gadgets storefront experience. Sign in with your Django staff account to manage catalog entries, shipping rules, verified orders, and payment logs.
+          </p>
+          <div className="mt-8 grid gap-4 md:grid-cols-3">
+            {[
+              ["Products", "Manage devices, accessories, pricing, and stock positions."],
+              ["Payments", "Review initialized transactions and webhook-confirmed orders."],
+              ["Operations", "Adjust shipping logic and watch fulfillment status."],
+            ].map(([title, text]) => (
+              <div key={title} className="rounded-[24px] border border-white/10 bg-white/6 p-5">
+                <p className="text-sm font-semibold text-white">{title}</p>
+                <p className="mt-2 text-sm leading-7 text-slate-300">{text}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="section-frame rounded-[36px] p-8">
+          <div className="inline-flex rounded-full bg-white/8 p-4 text-sky-300">
             <LockKeyhole className="h-7 w-7" />
           </div>
           <p className="mt-6 text-xs font-semibold uppercase tracking-[0.35em] text-sky-300">
-            Secure Admin Portal
+            Admin Sign-in
           </p>
-          <h1 className="mt-3 text-4xl font-semibold text-white">Django login required</h1>
+          <h2 className="mt-3 text-4xl font-semibold text-white">Use your staff credentials</h2>
           <p className="mt-4 text-sm leading-7 text-slate-300">
-            This portal now uses server-side authentication. Sign in with a Django staff account before accessing operator controls.
+            Authentication is still handled by Django. Only staff accounts will be allowed past this screen.
           </p>
-          <a
-            href={buildLoginUrl()}
-            className="mt-6 inline-flex items-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-blue-50"
-          >
-            <ShieldCheck className="h-4 w-4" />
-            Continue to Login
-          </a>
+
+          <form onSubmit={submitAdminLogin} className="mt-8 space-y-4">
+            <label className="block space-y-2">
+              <span className="text-sm font-semibold text-white">Username</span>
+              <input
+                value={credentials.username}
+                onChange={(event) =>
+                  setCredentials((current) => ({ ...current, username: event.target.value }))
+                }
+                className="w-full rounded-[22px] border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-sky-400"
+                autoComplete="username"
+                required
+              />
+            </label>
+            <label className="block space-y-2">
+              <span className="text-sm font-semibold text-white">Password</span>
+              <input
+                type="password"
+                value={credentials.password}
+                onChange={(event) =>
+                  setCredentials((current) => ({ ...current, password: event.target.value }))
+                }
+                className="w-full rounded-[22px] border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-sky-400"
+                autoComplete="current-password"
+                required
+              />
+            </label>
+            {authError ? (
+              <div className="rounded-[20px] border border-red-400/30 bg-red-500/10 px-4 py-3 text-sm text-red-100">
+                {authError}
+              </div>
+            ) : null}
+            <button
+              type="submit"
+              disabled={submittingAuth}
+              className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              <ShieldCheck className="h-4 w-4" />
+              {submittingAuth ? "Signing in..." : "Continue to Admin Portal"}
+            </button>
+          </form>
         </div>
       </div>
     );
@@ -192,6 +272,13 @@ export function AdminPortalPage() {
           </p>
         </div>
         <div className="flex gap-3">
+          <button
+            type="button"
+            onClick={handleAdminLogout}
+            className="rounded-full border border-white/10 bg-white/5 px-5 py-3 text-sm font-semibold text-white transition hover:bg-white/10"
+          >
+            Sign Out
+          </button>
           <button
             type="button"
             onClick={() => openProductEditor(null)}

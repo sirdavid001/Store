@@ -1,47 +1,118 @@
-{% extends 'base.html' %}
-{% block title %}Login | {{ store_name }}{% endblock %}
-{% block content %}
-<section class="container section-spacing auth-shell auth-shell-split">
-    <div class="auth-aside">
-        <p class="eyebrow">Secure admin access</p>
-        <h1>Sign in to manage SirDavid Gadgets.</h1>
-        <p class="auth-lead">
-            The secure admin portal protects product changes, shipping rules, payment logs, and verified order operations behind your Django staff account.
-        </p>
-        <div class="auth-badges">
-            <span>Staff-only access</span>
-            <span>Verified orders</span>
-            <span>Paystack logs</span>
-        </div>
-        <div class="auth-note">
-            <strong>Why you are seeing this</strong>
-            <p>
-                The admin route now uses server-enforced Django authentication. Sign in with a staff account to continue to the protected portal.
-            </p>
-        </div>
-    </div>
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% if is_admin_login %}Admin Login{% else %}Login{% endif %} | {{ store_name }}</title>
+    <meta name="description" content="Secure access for {{ store_name }} operators and account holders.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Sora:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/auth-portal.css' %}">
+</head>
+<body class="auth-portal-body">
+    <div class="auth-portal-shell">
+        <header class="auth-topbar">
+            <a class="auth-brand" href="/">
+                <span class="auth-brand-mark">SD</span>
+                <span>
+                    <strong>{{ store_name }}</strong>
+                    <small>{{ store_legal_name }}</small>
+                </span>
+            </a>
+            <a class="auth-store-link" href="/">Back to Storefront</a>
+        </header>
 
-    <div class="panel form-panel auth-panel auth-panel-elevated">
-        <p class="eyebrow">Account access</p>
-        <h2>Login</h2>
-        <p class="auth-helper">
-            Use your existing staff credentials. Customer accounts can sign in, but they will not be allowed into the secure admin portal.
-        </p>
-        <form method="post" class="auth-form">
-            {% csrf_token %}
-            {% if next %}
-                <input type="hidden" name="next" value="{{ next }}">
-            {% endif %}
-            {{ form.non_field_errors }}
-            {% for field in form %}
-                <div class="field-row">
-                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-                    {{ field }}
-                    {{ field.errors }}
+        <main class="auth-layout">
+            <section class="auth-hero-card">
+                <p class="auth-kicker">{% if is_admin_login %}Secure Admin Portal{% else %}Account Access{% endif %}</p>
+                <h1>
+                    {% if is_admin_login %}
+                        Same brand. Proper admin sign-in.
+                    {% else %}
+                        Welcome back to {{ store_name }}.
+                    {% endif %}
+                </h1>
+                <p class="auth-lead">
+                    {% if is_admin_login %}
+                        Sign in with a Django staff account to manage products, shipping rules, payment logs, and webhook-verified orders without dropping out of the storefront visual language.
+                    {% else %}
+                        Access order history, saved details, and your account using the same premium SirDavid Gadgets experience.
+                    {% endif %}
+                </p>
+
+                <div class="auth-pill-row">
+                    <span>Dark premium UI</span>
+                    <span>Staff-only access</span>
+                    <span>Paystack verified</span>
                 </div>
-            {% endfor %}
-            <button type="submit" class="btn btn-block">Log in</button>
-        </form>
+
+                <div class="auth-feature-grid">
+                    <article>
+                        <strong>Catalog control</strong>
+                        <p>Manage devices, accessories, stock positions, and merchandising without exposing the operator surface publicly.</p>
+                    </article>
+                    <article>
+                        <strong>Payment visibility</strong>
+                        <p>Review initialized payments, webhook confirmation status, and order outcomes after Paystack verification.</p>
+                    </article>
+                    <article>
+                        <strong>Protected route</strong>
+                        <p>The hidden admin route remains server-protected. This page is only the sign-in layer for that protected workflow.</p>
+                    </article>
+                </div>
+            </section>
+
+            <section class="auth-form-card">
+                <p class="auth-kicker">{% if is_admin_login %}Admin Sign-in{% else %}Sign-in{% endif %}</p>
+                <h2>{% if is_admin_login %}Enter your staff credentials{% else %}Log in{% endif %}</h2>
+                <p class="auth-form-copy">
+                    {% if is_admin_login %}
+                        Customer accounts can sign in, but only staff accounts are allowed into the secure admin portal.
+                    {% else %}
+                        Use your existing SirDavid Gadgets account credentials to continue.
+                    {% endif %}
+                </p>
+
+                <form method="post" class="auth-form">
+                    {% csrf_token %}
+                    {% if next_target %}
+                        <input type="hidden" name="next" value="{{ next_target }}">
+                    {% endif %}
+
+                    {% if form.non_field_errors %}
+                        <div class="auth-error-block">
+                            {{ form.non_field_errors }}
+                        </div>
+                    {% endif %}
+
+                    {% for field in form %}
+                        <div class="auth-field">
+                            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                            {{ field }}
+                            {% if field.errors %}
+                                <div class="auth-field-errors">{{ field.errors }}</div>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+
+                    <button type="submit" class="auth-submit">
+                        {% if is_admin_login %}Continue to Admin Portal{% else %}Log In{% endif %}
+                    </button>
+                </form>
+
+                <div class="auth-form-footer">
+                    {% if is_admin_login %}
+                        <span>Need a staff account?</span>
+                        <a href="mailto:{{ support_email }}">Contact support</a>
+                    {% else %}
+                        <span>Need an account?</span>
+                        <a href="{% url 'accounts:signup' %}">Create one</a>
+                    {% endif %}
+                </div>
+            </section>
+        </main>
     </div>
-</section>
-{% endblock %}
+</body>
+</html>

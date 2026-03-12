@@ -148,6 +148,18 @@ function getShippingCostUsd(subtotalUsd, shippingConfig) {
   return shippingConfig.flatFeeUsd;
 }
 
+function normalizeSessionStatus(payload) {
+  return {
+    loading: false,
+    isAuthenticated: Boolean(payload.isAuthenticated),
+    isStaff: Boolean(payload.isStaff),
+    username: payload.username ?? "",
+    displayName: payload.displayName ?? payload.username ?? "",
+    loginUrl: payload.loginUrl || "/accounts/login/",
+    logoutUrl: payload.logoutUrl || "/accounts/logout/",
+  };
+}
+
 export function StoreProvider({ children }) {
   const [products, setProducts] = useState(() => readStorage(STORAGE_KEYS.products, defaultProducts));
   const [cart, setCart] = useState(() => readStorage(STORAGE_KEYS.cart, []));
@@ -173,6 +185,24 @@ export function StoreProvider({ children }) {
     loginUrl: "/accounts/login/",
     logoutUrl: "/accounts/logout/",
   });
+
+  async function refreshSessionStatus() {
+    const endpoint = import.meta.env.VITE_SESSION_STATUS_ENDPOINT || "/session/status/";
+    const response = await fetch(endpoint, {
+      credentials: "include",
+      headers: {
+        Accept: "application/json",
+      },
+    });
+    if (!response.ok) {
+      throw new Error("session status lookup failed");
+    }
+
+    const payload = await response.json();
+    const normalized = normalizeSessionStatus(payload);
+    setSessionStatus(normalized);
+    return normalized;
+  }
 
   useEffect(() => {
     window.localStorage.setItem(STORAGE_KEYS.products, JSON.stringify(products));
@@ -202,33 +232,11 @@ export function StoreProvider({ children }) {
     let active = true;
 
     async function loadSessionStatus() {
-      const endpoint = import.meta.env.VITE_SESSION_STATUS_ENDPOINT || "/session/status/";
-
       try {
-        const response = await fetch(endpoint, {
-          credentials: "include",
-          headers: {
-            Accept: "application/json",
-          },
-        });
-        if (!response.ok) {
-          throw new Error("session status lookup failed");
-        }
-
-        const payload = await response.json();
+        await refreshSessionStatus();
         if (!active) {
           return;
         }
-
-        setSessionStatus({
-          loading: false,
-          isAuthenticated: Boolean(payload.isAuthenticated),
-          isStaff: Boolean(payload.isStaff),
-          username: payload.username ?? "",
-          displayName: payload.displayName ?? payload.username ?? "",
-          loginUrl: payload.loginUrl || "/accounts/login/",
-          logoutUrl: payload.logoutUrl || "/accounts/logout/",
-        });
       } catch {
         if (!active) {
           return;
@@ -247,6 +255,50 @@ export function StoreProvider({ children }) {
       active = false;
     };
   }, []);
+
+  async function adminLogin(credentials) {
+    const endpoint = import.meta.env.VITE_ADMIN_LOGIN_ENDPOINT || "/accounts/session/login/";
+    const response = await fetch(endpoint, {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRFToken": getCookie("csrftoken"),
+        Accept: "application/json",
+      },
+      body: JSON.stringify(credentials),
+    });
+
+    const payload = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      throw new Error(payload.message || "Could not sign in.");
+    }
+
+    const normalized = normalizeSessionStatus(payload);
+    setSessionStatus(normalized);
+    return normalized;
+  }
+
+  async function adminLogout() {
+    const endpoint = import.meta.env.VITE_ADMIN_LOGOUT_ENDPOINT || "/accounts/session/logout/";
+    const response = await fetch(endpoint, {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        "X-CSRFToken": getCookie("csrftoken"),
+        Accept: "application/json",
+      },
+    });
+
+    const payload = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      throw new Error(payload.message || "Could not sign out.");
+    }
+
+    const normalized = normalizeSessionStatus(payload);
+    setSessionStatus(normalized);
+    return normalized;
+  }
 
   useEffect(() => {
     let active = true;
@@ -467,6 +519,9 @@ export function StoreProvider({ children }) {
     loadingRates,
     lastRateSync,
     sessionStatus,
+    adminLogin,
+    adminLogout,
+    refreshSessionStatus,
     currencyOptions,
     addToCart,
     updateCartQuantity,
